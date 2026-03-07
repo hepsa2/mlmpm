@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>博客</title>
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -26,7 +24,6 @@ overflow-x:hidden;
 }
 
 /* 红星背景 */
-
 .star-bg{
 position:fixed;
 top:50%;
@@ -40,7 +37,6 @@ pointer-events:none;
 }
 
 /* 页面主体 */
-
 .container{
 max-width:900px;
 margin:auto;
@@ -48,7 +44,6 @@ padding:20px;
 }
 
 /* 返回按钮 */
-
 .back{
 margin-bottom:20px;
 }
@@ -64,16 +59,13 @@ color:#b30000;
 }
 
 /* 栏目 */
-
 .category{
-
 background:white;
 border-left:6px solid var(--red);
 border-radius:8px;
 padding:18px;
 margin-bottom:18px;
 cursor:pointer;
-
 }
 
 .category h2{
@@ -82,7 +74,6 @@ color:#8b0000;
 }
 
 /* 文章列表 */
-
 .post-list{
 display:none;
 margin-top:12px;
@@ -100,21 +91,34 @@ color:#b30000;
 }
 
 /* 文章内容 */
-
 #content{
-
 background:white;
 padding:25px;
 border-radius:10px;
 box-shadow:0 6px 18px rgba(0,0,0,0.15);
 line-height:1.8;
-
 }
 
 .related{
 margin-top:50px;
 border-top:2px solid #b30000;
 padding-top:20px;
+}
+
+/* 新增说明区 */
+.intro{
+background:white;
+border-radius:10px;
+padding:20px;
+margin-top:25px;
+box-shadow:0 6px 16px rgba(0,0,0,0.15);
+line-height:1.9;
+font-size:18px;
+}
+
+.intro img{
+margin-top:15px;
+border-radius:6px;
 }
 
 img{
@@ -134,7 +138,6 @@ font-size:16px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -160,26 +163,12 @@ const repo="hepsa2/mlmpm";
 /* 栏目 */
 
 const categories={
-
-A:{
-title:"时事评论",
-folder:"postsA"
-},
-
-B:{
-title:"理论分析",
-folder:"postsB"
-},
-
-C:{
-title:"国际视野",
-folder:"postsC"
-}
-
+A:{title:"时事评论",folder:"postsA"},
+B:{title:"理论分析",folder:"postsB"},
+C:{title:"国际视野",folder:"postsC"}
 };
 
 const params=new URLSearchParams(location.search);
-
 const cat=params.get("cat");
 const post=params.get("post");
 
@@ -208,22 +197,27 @@ for(let key in categories){
 let c=categories[key];
 
 html+=`
-
 <div class="category" onclick="toggle('${key}')">
-
 <h2>${c.title}</h2>
-
-<div class="post-list" id="list-${key}">
-
-加载中...
-
+<div class="post-list" id="list-${key}">加载中...</div>
 </div>
-
-</div>
-
 `;
 
 }
+
+/* 新增文字与图片 */
+
+html+=`
+<div class="intro">
+
+<p>
+马克思主义教导我们解决问题的关键在于如何应用普遍真理。如果不把马克思列宁毛主义应用到具体实际中，就不可能领导革命，就不可能改造、破坏旧秩序或创造新秩序。
+</p>
+
+<img src="00.jpg">
+
+</div>
+`;
 
 main.innerHTML=html;
 
@@ -315,7 +309,10 @@ let md=await res.text();
 
 let html=marked.parse(md);
 
-main.innerHTML=`<div id="content">${html}</div><div id="comments"></div>`;
+main.innerHTML=`
+<div id="content">${html}</div>
+<div id="comments"></div>
+`;
 
 loadComments();
 
