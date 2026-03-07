@@ -1,323 +1,103 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>无产阶级革命派</title><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet"><style>:root{--red:#b30000;--lightred:#ffd6d6;}*{margin:0;padding:0;box-sizing:border-box;}body{background:var(--lightred);font-family:'Noto Sans SC',sans-serif;overflow-x:hidden;}
 
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>无产阶级革命派</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
-
-<style>
-
-:root{
---red:#b30000;
---lightred:#ffd6d6;
-}
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
-body{
-background:var(--lightred);
-font-family:'Noto Sans SC',sans-serif;
-overflow-x:hidden;
-}
-
-/* ===== 飘动旗帜背景 ===== */
+/* ===== 淡色红星背景 ===== */
 
 .flag-bg{
 position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:120vw;
+color:#ffd700;
+opacity:0.08;
 z-index:-1;
-opacity:0.12;
 pointer-events:none;
-}
-
-.flag-bg svg{
-width:100%;
-height:100%;
-animation:wave 18s ease-in-out infinite;
-}
-
-@keyframes wave{
-
-0%{transform:translateX(0px)}
-50%{transform:translateX(-40px)}
-100%{transform:translateX(0px)}
-
+user-select:none;
+line-height:1;
 }
 
 /* ===== 苏联风汉堡按钮 ===== */
 
-.menu-btn{
+.menu-btn{position:fixed;top:25px;right:25px;width:55px;height:55px;background:#b30000;border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;cursor:pointer;box-shadow:0 0 15px rgba(180,0,0,0.5);z-index:1000;}
 
-position:fixed;
-top:25px;
-right:25px;
-
-width:55px;
-height:55px;
-
-background:#b30000;
-
-border-radius:10px;
-
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-
-gap:6px;
-
-cursor:pointer;
-
-box-shadow:0 0 15px rgba(180,0,0,0.5);
-
-z-index:1000;
-
-}
-
-.menu-btn span{
-
-width:26px;
-height:3px;
-background:white;
-transition:0.3s;
-
-}
+.menu-btn span{width:26px;height:3px;background:white;transition:0.3s;}
 
 /* X形 */
 
-.menu-btn.active span:nth-child(1){
-transform:rotate(45deg) translate(6px,6px);
-}
-
-.menu-btn.active span:nth-child(2){
-opacity:0;
-}
-
-.menu-btn.active span:nth-child(3){
-transform:rotate(-45deg) translate(6px,-6px);
-}
+.menu-btn.active span:nth-child(1){transform:rotate(45deg) translate(6px,6px);}
+.menu-btn.active span:nth-child(2){opacity:0;}
+.menu-btn.active span:nth-child(3){transform:rotate(-45deg) translate(6px,-6px);}
 
 /* 五角星 */
 
-.menu-btn:before{
-
-content:"★";
-color:#ffd700;
-
-position:absolute;
-top:-12px;
-right:-12px;
-font-size:20px;
-
-}
+.menu-btn:before{content:"★";color:#ffd700;position:absolute;top:-12px;right:-12px;font-size:20px;}
 
 /* ===== 侧边栏 ===== */
 
-.sidebar{
+.sidebar{position:fixed;top:0;right:0;width:350px;height:100vh;background:rgba(255,220,220,0.96);padding:100px 40px;transform:translateX(100%);transition:0.35s;border-left:2px solid #900;z-index:999;}
 
-position:fixed;
-top:0;
-right:0;
+.sidebar.active{transform:translateX(0);}
 
-width:350px;
-height:100vh;
+.sidebar a{display:block;margin-bottom:20px;padding:14px;background:white;border-radius:8px;text-decoration:none;color:#222;transition:0.2s;}
 
-background:rgba(255,220,220,0.96);
-
-padding:100px 40px;
-
-transform:translateX(100%);
-transition:0.35s;
-
-border-left:2px solid #900;
-
-z-index:999;
-
-}
-
-.sidebar.active{
-transform:translateX(0);
-}
-
-.sidebar a{
-
-display:block;
-
-margin-bottom:20px;
-
-padding:14px;
-
-background:white;
-
-border-radius:8px;
-
-text-decoration:none;
-
-color:#222;
-
-transition:0.2s;
-
-}
-
-.sidebar a:hover{
-background:#ffcccc;
-}
+.sidebar a:hover{background:#ffcccc;}
 
 /* ===== 主体 ===== */
 
-.container{
+.container{max-width:1100px;margin:auto;padding:60px 20px;text-align:center;}
 
-max-width:1100px;
-margin:auto;
-
-padding:60px 20px;
-
-text-align:center;
-
-}
-
-.hero-title{
-
-font-size:clamp(36px,8vw,90px);
-
-color:#8b0000;
-
-font-family:'Orbitron',monospace;
-
-margin-bottom:50px;
-
-}
+.hero-title{font-size:clamp(36px,8vw,90px);color:#8b0000;font-family:'Orbitron',monospace;margin-bottom:50px;}
 
 /* 图片 */
 
-.image-box{
+.image-box{max-width:750px;margin:auto;margin-bottom:40px;border-radius:20px;overflow:hidden;box-shadow:0 15px 40px rgba(0,0,0,0.2);}
 
-max-width:750px;
-margin:auto;
-margin-bottom:40px;
-
-border-radius:20px;
-overflow:hidden;
-
-box-shadow:0 15px 40px rgba(0,0,0,0.2);
-
-}
-
-.image-box img{
-width:100%;
-display:block;
-}
+.image-box img{width:100%;display:block;}
 
 /* ===== 小说 ===== */
 
-.story{
-
-max-width:750px;
-margin:auto;
-
-font-size:18px;
-
-line-height:1.9;
-
-margin-top:40px;
-
-}
+.story{max-width:750px;margin:auto;font-size:18px;line-height:1.9;margin-top:40px;}
 
 /* ===== 滚动革命口号 ===== */
 
-.slogan{
+.slogan{margin-top:200px;font-size:42px;color:#a00000;font-weight:700;opacity:0;transform:translateY(80px);transition:1.2s;}
 
-margin-top:200px;
-
-font-size:42px;
-
-color:#a00000;
-
-font-weight:700;
-
-opacity:0;
-
-transform:translateY(80px);
-
-transition:1.2s;
-
-}
-
-.slogan.show{
-
-opacity:1;
-transform:translateY(0);
-
-}
+.slogan.show{opacity:1;transform:translateY(0);}
 
 /* ===== 响应式 ===== */
 
 @media(max-width:768px){
 
-.sidebar{
-width:100%;
+.sidebar{width:100%;}
+
+.flag-bg{
+font-size:150vw;
 }
 
 }
 
-</style>
-</head>
+</style></head><body>
 
-<body>
+<!-- 淡色红星背景 -->
 
-<!-- 背景旗帜 -->
-
-<div class="flag-bg">
-
-<svg viewBox="0 0 800 400">
-
-<rect width="800" height="400" fill="#cc0000"/>
-
-<!-- 镰刀 -->
-
-<path d="M300 200 A80 80 0 1 1 320 200"
-stroke="#ffd700"
-stroke-width="18"
-fill="none"/>
-
-<!-- 锤子 -->
-
-<rect x="350" y="140" width="20" height="120" fill="#ffd700"/>
-
-<rect x="330" y="140" width="60" height="20" fill="#ffd700"/>
-
-</svg>
-
-</div>
+<div class="flag-bg">★</div>
 
 <!-- 汉堡按钮 -->
 
-<div class="menu-btn" id="menuBtn">
-<span></span>
-<span></span>
-<span></span>
-</div>
+<div class="menu-btn" id="menuBtn"><span></span><span></span><span></span></div>
 
 <!-- 侧边栏 -->
 
 <div class="sidebar" id="sidebar">
 
 <a href="jieshao.html">关于我们</a>
+
 <a href="blog.html">文章查看</a>
+
 <a href="network.html">网安知识</a>
+
 <a href="download.html">文件下载</a>
+
 <a href="wenw/wx.html">文艺展示</a>
 
 </div>
@@ -344,13 +124,12 @@ fill="none"/>
 <p>群众从来没有也永远不会堕入悲观主义的泥潭</p>
 <p>有人说他们是悲观的、无力的，这实际上是荒谬的诽谤</p>
 <p>群众永远是战斗的；但是群众斗争需要领导，需要一个党</p>
-<p>——————贡萨罗主席</p>
+<p>——————同志</p>
+
 </div>
 
 <div class="slogan" id="slogan">
-
 全世界无产阶级革命派，为重建军事化共产党而斗争！
-
 </div>
 
 </div>
@@ -363,10 +142,8 @@ const menuBtn=document.getElementById("menuBtn")
 const sidebar=document.getElementById("sidebar")
 
 menuBtn.onclick=()=>{
-
 menuBtn.classList.toggle("active")
 sidebar.classList.toggle("active")
-
 }
 
 /* 滚动口号 */
@@ -378,14 +155,11 @@ window.addEventListener("scroll",()=>{
 const pos=slogan.getBoundingClientRect().top
 
 if(pos<window.innerHeight-100){
-
 slogan.classList.add("show")
-
 }
 
 })
 
 </script>
 
-</body>
-</html>
+</body></html>
