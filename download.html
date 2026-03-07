@@ -8,12 +8,10 @@
 <meta http-equiv="Content-Security-Policy"
 content="
 default-src 'self';
-img-src 'self' data:;
-style-src 'self' 'unsafe-inline';
-script-src 'self';
-object-src 'none';
-base-uri 'none';
-frame-ancestors 'none';
+img-src 'self' data: https:;
+style-src 'self' 'unsafe-inline' https:;
+script-src 'self' https://cdn.jsdelivr.net;
+connect-src https://api.github.com https://raw.githubusercontent.com;
 ">
 
 <meta http-equiv="X-Frame-Options" content="DENY">
