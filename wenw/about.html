@@ -16,7 +16,6 @@ body{
     font-family:"Noto Sans SC",system-ui;
     overflow-x:hidden;
 }
-
 /* 背景红星 */
 .star-bg{
     position:fixed;
@@ -29,40 +28,24 @@ body{
     z-index:-1;
     pointer-events:none;
 }
-
 /* 页面容器 */
 .container{
     max-width:900px;
     margin:auto;
     padding:30px 20px;
 }
-
 /* 返回按钮 */
-.back{
-    margin-bottom:20px;
-}
+.back{margin-bottom:20px;}
 .back a{
     color:#900;
     text-decoration:none;
     font-size:18px;
 }
-.back a:hover{
-    color:#b30000;
-}
-
+.back a:hover{color:#b30000;}
 /* 标题 */
-h1{
-    text-align:center;
-    margin-bottom:20px;
-    color:#8b0000;
-}
-
+h1{text-align:center;margin-bottom:20px;color:#8b0000;}
 /* 小标题 */
-h2{
-    margin-top:25px;
-    color:#8b0000;
-}
-
+h2{margin-top:25px;color:#8b0000;}
 /* 段落背景 */
 .section{
     background:white;
@@ -71,19 +54,23 @@ h2{
     margin-bottom:20px;
     box-shadow:0 6px 16px rgba(0,0,0,0.15);
 }
-
 /* 淡红色背景段落 */
 .section-red{
     background:#ffe5e5;
 }
-
-/* 图片 */
-.section img{
-    max-width:100%;
-    margin-top:10px;
-    border-radius:6px;
+/* 图片大小调整 */
+.section img.org-img{
+    max-width:120px;
+    height:auto;
+    display:block;
+    margin:10px auto;
 }
-
+.section img.org-img-wide{
+    max-width:100%;
+    height:auto;
+    display:block;
+    margin:10px 0;
+}
 /* 折叠文本 */
 details{
     margin-top:10px;
@@ -91,38 +78,27 @@ details{
     background:#fff0f0;
     border-radius:6px;
 }
-
 summary{
     cursor:pointer;
     font-weight:bold;
 }
-
 /* 链接 */
 a{
     color:#333;
     text-decoration:none;
     font-size:18px;
 }
-
-a:hover{
-    color:#b30000;
-}
-
+a:hover{color:#b30000;}
 /* 手机适配 */
 @media(max-width:600px){
-    .container{
-        padding:20px 15px;
-    }
-    a{
-        font-size:16px;
-    }
+    .container{padding:20px 15px;}
+    a{font-size:16px;}
+    .section img.org-img{max-width:80px;}
 }
 </style>
 </head>
 <body>
-
 <div class="star-bg">★</div>
-
 <div class="container">
     <div class="back"><a href="index.html">← 返回首页</a></div>
 
@@ -130,10 +106,16 @@ a:hover{
 
     <div class="section">
         <strong>近期公示内容：</strong>
-        <p>以下为示例文字，展示如何在页面中加入公示信息。</p>
+        <p>
+            以下为示例文字，展示如何在页面中加入公示信息。可以写近期两社
+            <strong>这是字体加粗效果</strong>
+            <a href="https://webaes.pages.dev">→点击此处跳转网页</a>
+        </p>
         <details>
             <summary>折叠文本示例</summary>
-            <p>这里是折叠内容，你可以点击展开或收起。</p>
+            <p>
+                这里是折叠内容，你可以点击展开或收起。在写这种折叠效果的时候不要忘记折叠按钮套上details
+            </p>
         </details>
     </div>
 
@@ -142,22 +124,20 @@ a:hover{
     <div class="section section-red">
         <strong>联合发布处</strong>
         <p>地方学生小组联合发布</p>
-        <img src="photo/p1.png" alt="联合发布处图标">
+        <img src="../photo/p1.png" alt="联合发布处图标" class="org-img">
     </div>
 
     <div class="section section-red">
         <strong>人民之火</strong>
         <p>法国的毛派组织<a href="https://lesfpcn.wordpress.com">→官网链接</a></p>
-        <img src="photo/p2.png" alt="人民之火图">
+        <img src="../photo/p2.png" alt="横向组织" class="org-img-wide">
     </div>
 
     <div class="section section-red">
         <strong>劳动解放社</strong>
         <p>中国的马列毛主义，主要毛主义的社团，强调反修正主义<a href="https://emancipationoflabour.wordpress.com/">→官网链接</a></p>
-        <img src="aa.png" alt="劳动解放社">
+        <img src="../aa.png" alt="劳动解放社" class="org-img">
     </div>
-
 </div>
-
 </body>
 </html>
