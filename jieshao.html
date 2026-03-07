@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta http-equiv="Content-Security-Policy"
+content="
+default-src 'self';
+img-src 'self' data:;
+style-src 'self' 'unsafe-inline';
+script-src 'self';
+object-src 'none';
+base-uri 'none';
+frame-ancestors 'none';
+">
+
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="no-referrer">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>网站项目介绍</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+SC:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+--red:#b30000;
+--lightred:#ffd6d6;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+
+background:var(--lightred);
+
+font-family:'Noto Sans SC',sans-serif;
+
+color:#222;
+
+overflow-x:hidden;
+
+}
+
+/* ===== 背景五角星 ===== */
+
+.star-bg{
+
+position:fixed;
+
+top:50%;
+left:50%;
+
+transform:translate(-50%,-50%);
+
+font-size:120vw;
+
+color:#ffd700;
+
+opacity:0.08;
+
+z-index:-1;
+
+pointer-events:none;
+
+user-select:none;
+
+line-height:1;
+
+}
+
+/* ===== 主容器 ===== */
+
+.container{
+
+max-width:900px;
+
+margin:auto;
+
+padding:40px 24px;
+
+}
+
+/* 返回按钮 */
+
+.back{
+
+display:inline-block;
+
+margin-bottom:25px;
+
+background:#b30000;
+
+color:white;
+
+text-decoration:none;
+
+padding:10px 18px;
+
+border-radius:6px;
+
+transition:0.2s;
+
+font-size:14px;
+
+}
+
+.back:hover{
+
+background:#8b0000;
+
+}
+
+/* 标题 */
+
+h1{
+
+font-family:'Orbitron',monospace;
+
+text-align:center;
+
+color:#8b0000;
+
+margin-bottom:25px;
+
+font-size:38px;
+
+}
+
+/* 卡片内容 */
+
+.card{
+
+background:white;
+
+border-left:6px solid #b30000;
+
+padding:22px;
+
+border-radius:10px;
+
+line-height:1.8;
+
+font-size:18px;
+
+margin-bottom:20px;
+
+box-shadow:0 6px 18px rgba(0,0,0,0.15);
+
+}
+
+/* 提示 */
+
+.tip{
+
+font-size:14px;
+
+color:#666;
+
+margin-bottom:10px;
+
+}
+
+/* 强调 */
+
+strong{
+
+color:#900;
+
+}
+
+/* 手机适配 */
+
+@media (max-width:600px){
+
+h1{
+font-size:30px;
+}
+
+.card{
+font-size:16px;
+}
+
+.star-bg{
+font-size:150vw;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- 淡色大五角星背景 -->
+
+<div class="star-bg">★</div>
+
+<div class="container">
+
+<a class="back" href="index.html">← 返回首页</a>
+
+<h1>网站项目介绍</h1>
+
+<div class="card tip">
+
+请先开启梯子VPN或代理访问本网站。如果不知道什么是梯子（VPN），请先点击主页的网络安全知识，查看你必须掌握的网络安全知识。
+
+</div>
+
+<div class="card">
+这里存放我们的文章、主要观点及其他文件链接等
+
+
+<br><br>
+
+本网站由赤浪与mlmredflag搭建，与任何组织无关，旨在为朋友们提供各种方面的帮助
+
+</div>
+
+<h1>使用指南</h1>
+
+<div class="card">
+
+注意，为了你的隐私和匿名性，请不要直接用 wifi 或者 4G / 5G 直接连接，不要在 QQ、b站 等内网平台传播本站网址。
+
+<br><br>
+
+那怎么办呢？
+
+<br><br>
+
+这个网站的建设，确实是用来尽可能地广泛传播资源的。但我们希望在被封锁之前，使本网站的价值发挥到极限。
+
+<br><br>
+
+<strong>
+
+请尽量传播给你线下能经常接触到、交谈到的朋友，这是首选项。  
+
+与其给线上的大众快餐式的一阅而过，也不确保大家是否吸收了网站哪怕一个观点，不如在网站被封锁之前，多次、反复地与线下的朋友交流网站刊登的内容。  
+
+在线下的交互和反馈里充分发挥本网站带来的各个方面的益处。
+
+<br><br>
+
+而线上的不确定性就更大了，且线上传播为你和朋友、整个线上关系网都带来了原本可以避免的安全风险。
+
+</strong>
+  
+</div>
+
+</div>
+
+</body>
+</html>
