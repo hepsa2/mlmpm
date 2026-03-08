@@ -5,44 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>投稿页面</title>
 <style>
-:root {
-  --red:#b30000;
-  --lightred:#ffd6d6;
-}
-body {
-  margin:0;
-  font-family:"Noto Sans SC",sans-serif;
-  background:var(--lightred);
-  color:#222;
-  overflow-x:hidden;
-}
-.container {
-  max-width:800px;
-  margin:auto;
-  padding:20px;
-}
+:root { --red:#b30000; --lightred:#ffd6d6;}
+body { margin:0; font-family:"Noto Sans SC",sans-serif; background:var(--lightred); color:#222; overflow-x:hidden;}
+.container { max-width:800px; margin:auto; padding:20px;}
 h1 {color:var(--red);}
 label {display:block;margin-top:15px;font-weight:bold;}
-input[type=text], textarea, select {
-  width:100%;
-  padding:10px;
-  margin-top:5px;
-  border-radius:6px;
-  border:1px solid #ccc;
-  font-size:16px;
-  box-sizing:border-box;
-}
+input[type=text], textarea, select { width:100%; padding:10px; margin-top:5px; border-radius:6px; border:1px solid #ccc; font-size:16px; box-sizing:border-box;}
 textarea {resize:vertical;height:200px;}
-button {
-  margin-top:20px;
-  padding:12px 24px;
-  background:var(--red);
-  color:white;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  font-size:16px;
-}
+button { margin-top:20px; padding:12px 24px; background:var(--red); color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px;}
 button:hover {background:#900;}
 .error {color:red;margin-top:10px;}
 .success {color:green;margin-top:10px;}
@@ -52,25 +22,20 @@ button:hover {background:#900;}
 <div class="container">
 <h1>访客投稿</h1>
 <p>请填写文章标题、内容，并选择栏目。提交后将自动生成 GitHub Issue，由管理员审核后加入博客。</p>
-
 <form id="submitForm">
   <label for="title">文章标题</label>
   <input type="text" id="title" maxlength="60" required>
-
   <label for="category">栏目</label>
   <select id="category" required>
     <option value="X">【访客】投稿文章</option>
     <option value="Y">【访客】观点评论</option>
     <option value="Z">【访客】文艺阵线</option>
   </select>
-
   <label for="content">正文（Markdown 格式）</label>
   <textarea id="content" maxlength="5000" required></textarea>
-
   <!-- 简单验证码防滥用 -->
   <label for="captcha">验证码：请填写数字 <span id="captchaNum"></span></label>
   <input type="text" id="captcha" required>
-
   <button type="submit">提交文章</button>
   <div class="error" id="errorMsg"></div>
   <div class="success" id="successMsg"></div>
@@ -116,12 +81,8 @@ form.addEventListener("submit", async e=>{
 
   const issueData = {
     title:`[投稿][${category}] ${title}`,
-    body: `---
-文件名: ${filename}
-栏目: ${category}
----
-
-${content}`
+    body: `---文件名: ${filename} 栏目: ${category} ---\n${content}`,
+    labels: ["投稿"] // ✅ 默认加上投稿标签，方便 Action 触发
   };
 
   try {
