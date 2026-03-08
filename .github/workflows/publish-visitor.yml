@@ -1,0 +1,67 @@
+name: Visitor Submission Handler
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+jobs:
+  handle-submission:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, '投稿')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Parse Issue and process
+        id: process
+        run: |
+          echo "Processing Issue #${{ github.event.issue.number }}"
+
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_BODY="${{ github.event.issue.body }}"
+
+          # 提取文件名和栏目
+          FILE_NAME=$(echo "$ISSUE_BODY" | grep -oP '(?<=---文件名: ).*?(?= 栏目: )')
+          CATEGORY=$(echo "$ISSUE_BODY" | grep -oP '(?<=栏目: ).*?(?=---)')
+
+          echo "File: $FILE_NAME"
+          echo "Category: $CATEGORY"
+
+          # 根据标签判断动作
+          LABELS="${{ github.event.issue.labels.*.name }}"
+
+          if [[ "$LABELS" == *"发布"* ]]; then
+            echo "Publishing submission..."
+            # 生成对应目录
+            case "$CATEGORY" in
+              X) FOLDER="postsX" ;;
+              Y) FOLDER="postsY" ;;
+              Z) FOLDER="postsZ" ;;
+              *) echo "未知栏目 $CATEGORY, 使用 postsX"; FOLDER="postsX" ;;
+            esac
+
+            mkdir -p "$FOLDER"
+            echo "$ISSUE_BODY" | sed -e '1,/---/d' > "$FOLDER/$FILE_NAME"
+
+            # Git commit & push
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "$FOLDER/$FILE_NAME"
+            git commit -m "发布访客投稿: $FILE_NAME"
+            git push
+
+            # 在 Issue 留言通知作者
+            echo "发布完成"
+
+          elif [[ "$LABELS" == *"拒绝"* ]]; then
+            echo "Closing submission as rejected..."
+            gh issue comment ${{ github.event.issue.number }} --body "管理员已拒绝此投稿。"
+            gh issue close ${{ github.event.issue.number }}
+          else
+            echo "未打发布或拒绝标签，不做动作"
+          fi
