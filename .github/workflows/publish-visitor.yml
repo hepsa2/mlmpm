@@ -4,64 +4,108 @@ on:
   issues:
     types: [opened, edited, labeled]
 
+# 必须声明权限，否则 git push 和 gh 命令会失败
+permissions:
+  contents: write
+  issues: write
+
 jobs:
   handle-submission:
     runs-on: ubuntu-latest
+    # 只处理带"投稿"标签的 Issue
     if: contains(github.event.issue.labels.*.name, '投稿')
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
+        uses: actions/checkout@v4
 
       - name: Parse Issue and process
-        id: process
+        env:
+          # 用 env 传递变量，避免直接插值导致的 shell 注入和解析问题
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ',') }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Processing Issue #${{ github.event.issue.number }}"
+          echo "=== Processing Issue #${ISSUE_NUMBER} ==="
+          echo "Labels: ${ISSUE_LABELS}"
 
-          ISSUE_TITLE="${{ github.event.issue.title }}"
-          ISSUE_BODY="${{ github.event.issue.body }}"
+          # ── 提取文件名和栏目（匹配新格式：YAML front matter）──
+          # Issue 正文格式：
+          #   ---
+          #   文件名: xxx.md
+          #   栏目: X
+          #   ---
+          FILE_NAME=$(echo "$ISSUE_BODY" | grep -oP '(?<=文件名: )[^\n\r]+' | head -1 | tr -d '\r')
+          CATEGORY=$(echo "$ISSUE_BODY"  | grep -oP '(?<=栏目: )[^\n\r]+'  | head -1 | tr -d '\r')
 
-          # 提取文件名和栏目
-          FILE_NAME=$(echo "$ISSUE_BODY" | grep -oP '(?<=---文件名: ).*?(?= 栏目: )')
-          CATEGORY=$(echo "$ISSUE_BODY" | grep -oP '(?<=栏目: ).*?(?=---)')
+          echo "File: ${FILE_NAME}"
+          echo "Category: ${CATEGORY}"
 
-          echo "File: $FILE_NAME"
-          echo "Category: $CATEGORY"
+          # ── 安全检查：防止路径穿越攻击 ──
+          if [[ "$FILE_NAME" == *"/"* ]] || [[ "$FILE_NAME" == *".."* ]]; then
+            echo "❌ 非法文件名，中止。"
+            gh issue comment "$ISSUE_NUMBER" --body "⚠️ 系统检测到非法文件名，投稿已被自动拒绝。"
+            exit 1
+          fi
 
-          # 根据标签判断动作
-          LABELS="${{ github.event.issue.labels.*.name }}"
+          # ── 根据标签决定动作 ──
+          if echo "$ISSUE_LABELS" | grep -q "发布"; then
+            echo "→ 正在发布投稿…"
 
-          if [[ "$LABELS" == *"发布"* ]]; then
-            echo "Publishing submission..."
-            # 生成对应目录
+            # 根据栏目选择目录
             case "$CATEGORY" in
               X) FOLDER="postsX" ;;
               Y) FOLDER="postsY" ;;
               Z) FOLDER="postsZ" ;;
-              *) echo "未知栏目 $CATEGORY, 使用 postsX"; FOLDER="postsX" ;;
+              *) echo "未知栏目 ${CATEGORY}，使用 postsX"; FOLDER="postsX" ;;
             esac
 
             mkdir -p "$FOLDER"
-            echo "$ISSUE_BODY" | sed -e '1,/---/d' > "$FOLDER/$FILE_NAME"
+
+            # 提取正文（第二个 --- 之后的内容）
+            CONTENT=$(echo "$ISSUE_BODY" | awk '/^---$/{n++; if(n==2){found=1; next}} found{print}')
+
+            if [[ -z "$CONTENT" ]]; then
+              echo "❌ 无法提取正文内容，中止。"
+              gh issue comment "$ISSUE_NUMBER" --body "⚠️ 系统无法解析正文内容，请检查投稿格式。"
+              exit 1
+            fi
+
+            # 写入文件（添加简单的 front matter）
+            {
+              echo "---"
+              echo "title: \"$(echo "$ISSUE_TITLE" | sed 's/^\[投稿\]\[.\] //')\""
+              echo "category: \"${CATEGORY}\""
+              echo "source_issue: ${ISSUE_NUMBER}"
+              echo "---"
+              echo ""
+              echo "$CONTENT"
+            } > "${FOLDER}/${FILE_NAME}"
 
             # Git commit & push
-            git config user.name "github-actions[bot]"
+            git config user.name  "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add "$FOLDER/$FILE_NAME"
-            git commit -m "发布访客投稿: $FILE_NAME"
+            git add "${FOLDER}/${FILE_NAME}"
+            git commit -m "发布访客投稿: ${FILE_NAME} (Issue #${ISSUE_NUMBER})"
             git push
 
             # 在 Issue 留言通知作者
-            echo "发布完成"
+            gh issue comment "$ISSUE_NUMBER" \
+              --body "✅ 您的投稿已审核通过并发布！文件路径：\`${FOLDER}/${FILE_NAME}\`"
 
-          elif [[ "$LABELS" == *"拒绝"* ]]; then
-            echo "Closing submission as rejected..."
-            gh issue comment ${{ github.event.issue.number }} --body "管理员已拒绝此投稿。"
-            gh issue close ${{ github.event.issue.number }}
+            echo "=== 发布完成 ==="
+
+          elif echo "$ISSUE_LABELS" | grep -q "拒绝"; then
+            echo "→ 拒绝投稿，关闭 Issue…"
+
+            gh issue comment "$ISSUE_NUMBER" \
+              --body "❌ 很遗憾，管理员经审核后决定不发布此投稿。感谢您的参与！"
+            gh issue close "$ISSUE_NUMBER"
+
+            echo "=== Issue 已关闭 ==="
+
           else
-            echo "未打发布或拒绝标签，不做动作"
+            echo "→ 尚未打「发布」或「拒绝」标签，等待管理员操作。"
           fi
