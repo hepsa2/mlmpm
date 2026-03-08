@@ -21,7 +21,7 @@ button:hover {background:#900;}
 <body>
 <div class="container">
 <h1>访客投稿</h1>
-<p>请填写文章标题、内容，并选择栏目。提交后将自动生成 GitHub Issue，由管理员审核后加入博客。</p>
+<p>请填写文章标题、内容，并选择栏目。提交后将自动生成 GitHub Issue，由管理员审核后发布到博客。</p>
 <form id="submitForm">
   <label for="title">文章标题</label>
   <input type="text" id="title" maxlength="60" required>
@@ -70,26 +70,21 @@ form.addEventListener("submit", async e=>{
     return;
   }
 
-  /* ===== 生成 Markdown 文件名 ===== */
   const safeTitle = title.replace(/[^\w\u4e00-\u9fa5]/g,'_');
   const filename = `${safeTitle}.md`;
 
-  /* ===== 调用 GitHub API 创建 Issue ===== */
+  // GitHub Issue 数据
   const repo = "hepsa2/mlmpm"; // 仓库名
-  const token = prompt("请输入 GitHub 个人访问令牌（仅用于演示，可换成服务器端隐藏）");
-  if(!token){ errorMsg.innerText="需要 GitHub Token 才能提交"; return; }
-
   const issueData = {
     title:`[投稿][${category}] ${title}`,
     body: `---文件名: ${filename} 栏目: ${category} ---\n${content}`,
-    labels: ["投稿"] // ✅ 默认加上投稿标签，方便 Action 触发
+    labels: ["投稿"] // 默认投稿标签
   };
 
   try {
     const res = await fetch(`https://api.github.com/repos/${repo}/issues`,{
       method:"POST",
       headers:{
-        "Authorization":`token ${token}`,
         "Accept":"application/vnd.github+json"
       },
       body: JSON.stringify(issueData)
