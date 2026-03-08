@@ -39,98 +39,140 @@ img{max-width:100%;}
 </div>
 <script>
 /* GitHub仓库 */
-const repo="hepsa2/mlmpm";
-/* 栏目 */
-const categories={
-    A:{title:"时事评论/组织实践",folder:"postsA"},
-    B:{title:"理论分析/名著解读",folder:"postsB"},
-    C:{title:"国际视野/文艺阵线",folder:"postsC"}
+const repo = "hepsa2/mlmpm";
+
+/* 栏目配置 */
+const categories = {
+    A: { title: "时事评论/组织实践", folder: "postsA" },
+    B: { title: "理论分析/名著解读", folder: "postsB" },
+    C: { title: "国际视野/文艺阵线", folder: "postsC" }
 };
-const params=new URLSearchParams(location.search);
-const cat=params.get("cat");
-const post=params.get("post");
-const main=document.getElementById("main");
 
-/* 打开文章 */
-if(cat && post){loadPost(cat,post);}
-else{showCategories();}
+const params = new URLSearchParams(location.search);
+const cat    = params.get("cat");
+const post   = params.get("post");
+const main   = document.getElementById("main");
 
-/* 显示栏目 */
-async function showCategories(){
-    let html="<h1>博客栏目</h1>";
-    for(let key in categories){
-        let c=categories[key];
-        html+=`<div class="category" onclick="toggle('${key}')"><h2>${c.title}</h2><div class="post-list" id="list-${key}">加载中...</div></div>`;
+if (cat && post) { loadPost(cat, post); }
+else { showCategories(); }
+
+/* ── 显示栏目列表 ── */
+async function showCategories() {
+    let html = "<h1>博客栏目</h1>";
+    for (let key in categories) {
+        let c = categories[key];
+        html += `<div class="category" onclick="toggle('${key}')">
+                   <h2>${c.title}</h2>
+                   <div class="post-list" id="list-${key}">加载中...</div>
+                 </div>`;
     }
-
-    /* 新增群众论坛按钮 */
-    html+=`<a class="forum-btn" href="submit.html">群众论坛 → 投稿/讨论</a>`;
-
-    /* 新增文字与图片 */
-    html+=`<div class="intro">
+    html += `<a class="forum-btn" href="submit.html">群众论坛 → 投稿/讨论</a>`;
+    html += `<div class="intro">
         <p>马克思主义教导我们解决问题的关键在于如何应用普遍真理。如果不把马克思列宁毛主义应用到具体实际中，就不可能领导革命，就不可能改造、破坏旧秩序或创造新秩序。  ——————贡萨罗主席</p>
         <img src="00.jpg">
     </div>`;
-    main.innerHTML=html;
+    main.innerHTML = html;
 
-    /* 读取文章 */
-    for(let key in categories){loadPosts(key);}
+    for (let key in categories) { loadPosts(key); }
 }
 
-/* 读取 GitHub 文章列表 */
-async function loadPosts(key){
-    let folder=categories[key].folder;
-    let url=`https://api.github.com/repos/${repo}/contents/${folder}`;
-    let res=await fetch(url);
-    let data=await res.json();
-    let list=document.getElementById("list-"+key);
-    list.innerHTML="";
-    for(let file of data){
-        if(!file.name.endsWith(".md")) continue;
-        let name=file.name.replace(".md","");
-        /* 读取 markdown */
-        let raw=`https://raw.githubusercontent.com/${repo}/main/${folder}/${file.name}`;
-        let text=await fetch(raw).then(r=>r.text());
-        let title=name;
-        /* 提取标题 */
-        let match=text.match(/^#\s+(.*)/);
-        if(match){title=match[1];}
-        /* 添加链接 */
-        let a=document.createElement("a");
-        a.href=`?cat=${key}&post=${name}`;
-        a.innerText=title;
-        list.appendChild(a);
+/* ── 从文本中提取标题（兼容 YAML front matter 和 # 标题两种格式）── */
+function extractTitle(text, fallback) {
+    // 优先：YAML front matter 的 title 字段
+    // 格式：title: "文章标题"  或  title: 文章标题
+    const yamlMatch = text.match(/^---[\s\S]*?^title:\s*["']?(.+?)["']?\s*$/m);
+    if (yamlMatch) return yamlMatch[1].trim();
+
+    // 降级：Markdown # 标题（手动上传的旧文件）
+    const mdMatch = text.match(/^#\s+(.*)/m);
+    if (mdMatch) return mdMatch[1].trim();
+
+    // 兜底：文件名
+    return fallback;
+}
+
+/* ── 去掉 YAML front matter，只返回正文部分 ── */
+function stripFrontMatter(text) {
+    // 匹配开头的 --- ... --- 块
+    return text.replace(/^---[\s\S]*?---\n?/, "").trim();
+}
+
+/* ── 读取某栏目下的文章列表 ── */
+async function loadPosts(key) {
+    const folder = categories[key].folder;
+    const list   = document.getElementById("list-" + key);
+    try {
+        const res  = await fetch(`https://api.github.com/repos/${repo}/contents/${folder}`);
+        const data = await res.json();
+
+        if (!Array.isArray(data)) {
+            list.innerHTML = "<span style='color:#999;font-size:14px'>暂无文章</span>";
+            return;
+        }
+
+        const mdFiles = data.filter(f => f.name.endsWith(".md"));
+        if (mdFiles.length === 0) {
+            list.innerHTML = "<span style='color:#999;font-size:14px'>暂无文章</span>";
+            return;
+        }
+
+        list.innerHTML = "";
+        for (const file of mdFiles) {
+            const name = file.name.replace(".md", "");
+            const raw  = `https://raw.githubusercontent.com/${repo}/main/${folder}/${file.name}`;
+            const text = await fetch(raw).then(r => r.text());
+            const title = extractTitle(text, name);
+
+            const a  = document.createElement("a");
+            a.href      = `?cat=${key}&post=${encodeURIComponent(name)}`;
+            a.innerText = title;
+            list.appendChild(a);
+        }
+    } catch (e) {
+        list.innerHTML = "<span style='color:#999;font-size:14px'>加载失败，请稍后重试</span>";
     }
 }
 
-/* 展开栏目 */
-function toggle(id){
-    let el=document.getElementById("list-"+id);
-    el.style.display=el.style.display==="block"?"none":"block";
+/* ── 展开/收起栏目 ── */
+function toggle(id) {
+    const el = document.getElementById("list-" + id);
+    el.style.display = el.style.display === "block" ? "none" : "block";
 }
 
-/* 加载文章 */
-async function loadPost(cat,id){
-    let folder=categories[cat].folder;
-    let url=`https://raw.githubusercontent.com/${repo}/main/${folder}/${id}.md`;
-    let res=await fetch(url);
-    let md=await res.text();
-    let html=marked.parse(md);
-    main.innerHTML=`<div id="content">${html}</div><div id="comments"></div>`;
+/* ── 加载并渲染文章 ── */
+async function loadPost(cat, id) {
+    const folder = categories[cat] ? categories[cat].folder : "postsA";
+    const url    = `https://raw.githubusercontent.com/${repo}/main/${folder}/${decodeURIComponent(id)}.md`;
+    const res    = await fetch(url);
+
+    if (!res.ok) {
+        main.innerHTML = `<div id="content"><p style="color:#900">文章加载失败，请返回重试。</p></div>`;
+        return;
+    }
+
+    const md      = await res.text();
+    const title   = extractTitle(md, id);
+    const body    = stripFrontMatter(md);   // 渲染时去掉 front matter，避免显示 --- 块
+
+    // 若正文没有 # 标题，自动在顶部插入标题
+    const hasH1   = /^#\s+/m.test(body);
+    const rendered = marked.parse(hasH1 ? body : `# ${title}\n\n${body}`);
+
+    main.innerHTML = `<div id="content">${rendered}</div><div id="comments"></div>`;
     loadComments();
 }
 
-/* 评论系统 */
-function loadComments(){
-    const script=document.createElement("script");
-    script.src="https://giscus.app/client.js";
-    script.setAttribute("data-repo","hepsa2/mlmpm");
-    script.setAttribute("data-mapping","pathname");
-    script.setAttribute("data-category","General");
-    script.setAttribute("data-reactions-enabled","1");
-    script.setAttribute("data-theme","light");
-    script.setAttribute("data-lang","zh-CN");
-    script.async=true;
+/* ── 评论系统（giscus）── */
+function loadComments() {
+    const script = document.createElement("script");
+    script.src   = "https://giscus.app/client.js";
+    script.setAttribute("data-repo",               "hepsa2/mlmpm");
+    script.setAttribute("data-mapping",            "pathname");
+    script.setAttribute("data-category",           "General");
+    script.setAttribute("data-reactions-enabled",  "1");
+    script.setAttribute("data-theme",              "light");
+    script.setAttribute("data-lang",               "zh-CN");
+    script.async = true;
     document.getElementById("comments").appendChild(script);
 }
 </script>
