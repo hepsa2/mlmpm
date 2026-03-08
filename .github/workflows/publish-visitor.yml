@@ -59,7 +59,7 @@ jobs:
               X) FOLDER="postsA" ;;
               Y) FOLDER="postsB" ;;
               Z) FOLDER="postsC" ;;
-              *) echo "未知栏目 ${CATEGORY}，使用 postsX"; FOLDER="postsX" ;;
+              *) echo "未知栏目 ${CATEGORY}，使用 postsA"; FOLDER="postsA" ;;
             esac
 
             mkdir -p "$FOLDER"
