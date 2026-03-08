@@ -56,9 +56,9 @@ jobs:
 
             # 根据栏目选择目录
             case "$CATEGORY" in
-              X) FOLDER="postsX" ;;
-              Y) FOLDER="postsY" ;;
-              Z) FOLDER="postsZ" ;;
+              X) FOLDER="postsA" ;;
+              Y) FOLDER="postsB" ;;
+              Z) FOLDER="postsC" ;;
               *) echo "未知栏目 ${CATEGORY}，使用 postsX"; FOLDER="postsX" ;;
             esac
 
