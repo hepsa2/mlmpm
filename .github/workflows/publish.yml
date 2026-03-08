@@ -1,0 +1,66 @@
+name: Auto Publish Visitor Posts
+
+on:
+  issues:
+    types: [labeled] # 只在 Issue 被打标签时触发
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.event.label.name == '发布' # ✅ 只有管理员打了发布标签才触发
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up GitHub token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "Token ready"
+
+      - name: Get issue content
+        id: issue
+        run: |
+          ISSUE_NUMBER=${{ github.event.issue.number }}
+          TITLE="${{ github.event.issue.title }}"
+          BODY="${{ github.event.issue.body }}"
+          echo "TITLE<<EOF" >> $GITHUB_OUTPUT
+          echo "$TITLE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "BODY<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Parse category and filename
+        id: parse
+        run: |
+          BODY="${{ steps.issue.outputs.BODY }}"
+          # 从 body 解析 filename 和栏目
+          FILENAME=$(echo "$BODY" | grep -oP '(?<=文件名: )[^ ]+')
+          CATEGORY=$(echo "$BODY" | grep -oP '(?<=栏目: )\S+')
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          echo "CATEGORY=$CATEGORY" >> $GITHUB_ENV
+          # 文章内容
+          CONTENT=$(echo "$BODY" | sed -n '/---文件名:/,$p' | tail -n +2)
+          echo "CONTENT<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Save markdown
+        run: |
+          FOLDER="posts${CATEGORY}"
+          mkdir -p "$FOLDER"
+          echo "${{ steps.parse.outputs.CONTENT }}" > "$FOLDER/${{ env.FILENAME }}"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          git commit -m "发布访客文章: ${{ steps.issue.outputs.TITLE }}"
+          git push
+
+      - name: Close Issue after publishing
+        uses: peter-evans/close-issue@v3
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: "文章已发布到博客。"
