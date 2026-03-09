@@ -1,3 +1,5 @@
+# 配合Issues的三个标签食用。
+注意要改blog.html和submit.html里的用户名和仓库
 # Markdawn格式说明<br>
 发表文章只需要点进postsA或postsB等文件夹，创建：文件名.md然后撰写内容<br>
 注意文件的后缀是 .md<br><br>
