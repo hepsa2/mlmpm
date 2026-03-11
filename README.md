@@ -1,6 +1,6 @@
 # 静态论坛！
 ## 配合Issues的三个标签食用。
-### 含论坛、giscus评论系统，实现近乎动态网站功能。无需担心服务器的安全程度和金钱--因为用不到你的后端！
+### 含论坛、giscus评论系统，实现近乎动态网站功能。无需担心服务器的安全程度和金钱--因为用不到你的后端！[→网站实现](https://mlmpm.pages.dev/)
 注意要改index.html、blog.html和submit.html里的用户名和仓库（替换hepsa2和mlmpm），可统一用AI完成修改<br>
 submit.html人际验证还可以引入cloudflare<br>
 审核打标签不要取消原来的投稿标签，新增标签即可。
