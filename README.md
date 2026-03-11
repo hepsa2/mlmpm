@@ -1,5 +1,5 @@
 # 配合Issues的三个标签食用。
-注意要改blog.html和submit.html里的用户名和仓库
+注意要改blog.html和submit.html里的用户名和仓库<br>
 审核打标签不要取消原来的投稿标签，新增标签即可。
 # Markdawn格式说明<br>
 发表文章只需要点进postsA或postsB等文件夹，创建：文件名.md然后撰写内容<br>
