@@ -1,5 +1,6 @@
 # 配合Issues的三个标签食用。
-注意要改blog.html和submit.html里的用户名和仓库<br>
+注意要改index.html、blog.html和submit.html里的用户名和仓库（替换hepsa2和mlmpm），可统一用AI完成修改<br>
+submit.html人际验证还可以引入cloudflare<br>
 审核打标签不要取消原来的投稿标签，新增标签即可。
 # Markdawn格式说明<br>
 - 备注：请点进main的README文件，选择code一栏查看格式<br>
