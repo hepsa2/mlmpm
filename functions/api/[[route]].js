@@ -158,7 +158,7 @@ export async function onRequest(context) {
       if (!room) return err('房间不存在', 404);
 
       const member = await env.DB.prepare(
-        'SELECT id FROM members WHERE room_id = ? AND nickname = ? AND token = ?'
+        'SELECT nickname FROM members WHERE room_id = ? AND nickname = ? AND token = ?'
       ).bind(roomId, nickname, token).first();
       if (!member) return err('身份验证失败', 401);
 
@@ -238,7 +238,7 @@ export async function onRequest(context) {
       if (!room) return err('房间不存在', 404);
 
       const member = await env.DB.prepare(
-        'SELECT id FROM members WHERE room_id = ? AND nickname = ? AND token = ?'
+        'SELECT nickname FROM members WHERE room_id = ? AND nickname = ? AND token = ?'
       ).bind(roomId, nickname, token).first();
       if (!member) return err('身份验证失败', 401);
 
