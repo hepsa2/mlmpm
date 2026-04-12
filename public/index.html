@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>在线会议</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">🗣️</div>
+      <h1 class="text-3xl font-bold text-indigo-700">在线会议</h1>
+      <p class="text-gray-500 mt-2">无需账号，输入房间号即可开始</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">房间号</label>
+        <input
+          id="roomId"
+          type="text"
+          maxlength="8"
+          autocomplete="off"
+          class="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg font-mono tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+          placeholder="输入8位房间号"
+        />
+        <p class="text-xs text-gray-400 mt-1 text-center">由字母 A-Z 和数字 0-9 组成</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">你的昵称</label>
+        <input
+          id="nickname"
+          type="text"
+          maxlength="20"
+          class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          placeholder="输入昵称（最多20字）"
+        />
+      </div>
+
+      <div id="errorMsg" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-4 py-2 text-center"></div>
+
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <button
+          onclick="handleJoin()"
+          class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition active:scale-95"
+        >
+          加入房间
+        </button>
+        <button
+          onclick="handleCreate()"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition active:scale-95"
+        >
+          创建房间
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-gray-400 mt-4">
+      创建者自动成为主持人 · 房间24小时后自动删除
+    </p>
+  </div>
+
+  <script>
+    const roomIdInput = document.getElementById('roomId');
+    const nicknameInput = document.getElementById('nickname');
+    const errorMsg = document.getElementById('errorMsg');
+
+    roomIdInput.addEventListener('input', function () {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.remove('hidden');
+    }
+    function hideError() {
+      errorMsg.classList.add('hidden');
+    }
+
+    function getInputs() {
+      const roomId = roomIdInput.value.trim();
+      const nickname = nicknameInput.value.trim();
+      if (!/^[A-Z0-9]{8}$/.test(roomId)) {
+        showError('房间号必须是8位字母+数字');
+        return null;
+      }
+      if (!nickname) {
+        showError('请输入昵称');
+        return null;
+      }
+      hideError();
+      return { roomId, nickname };
+    }
+
+    async function handleCreate() {
+      const data = getInputs();
+      if (!data) return;
+      try {
+        const res = await fetch('/api/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (json.error) { showError(json.error); return; }
+        saveAndGo(json);
+      } catch {
+        showError('网络错误，请重试');
+      }
+    }
+
+    async function handleJoin() {
+      const data = getInputs();
+      if (!data) return;
+      try {
+        const res = await fetch('/api/join', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (json.error) { showError(json.error); return; }
+        saveAndGo(json);
+      } catch {
+        showError('网络错误，请重试');
+      }
+    }
+
+    function saveAndGo(json) {
+      sessionStorage.setItem(
+        'meeting',
+        JSON.stringify({
+          roomId: json.roomId,
+          nickname: json.nickname,
+          isHost: json.isHost,
+          token: json.token,
+          hostToken: json.hostToken || null,
+        })
+      );
+      window.location.href = '/room.html';
+    }
+  </script>
+</body>
+</html>
