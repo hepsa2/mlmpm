@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { box-sizing: border-box; }
-
     html, body {
       height: 100%;
       margin: 0;
@@ -15,20 +14,13 @@
       overflow: hidden;
       background: #f9fafb;
     }
-
     #appRoot {
       display: flex;
       flex-direction: column;
       height: 100vh;
       height: 100dvh;
     }
-
-    /* 顶栏固定高度 */
-    #appHeader {
-      flex: 0 0 auto;
-    }
-
-    /* 文件展示区固定高度 */
+    #appHeader { flex: 0 0 auto; }
     #fileSection {
       flex: 0 0 38vh;
       min-height: 160px;
@@ -38,8 +30,6 @@
       border-bottom: 1px solid #e5e7eb;
       overflow: hidden;
     }
-
-    /* 评论区占满剩余空间 */
     #commentSection {
       flex: 1 1 0;
       display: flex;
@@ -47,28 +37,31 @@
       min-height: 0;
       background: #fff;
     }
-
-    /* 置顶消息 */
-    #pinnedBar {
-      flex: 0 0 auto;
-    }
-
-    /* 消息列表滚动区 */
+    #pinnedBar { flex: 0 0 auto; }
     #msgList {
       flex: 1 1 0;
       min-height: 0;
       overflow-y: auto;
       padding: 8px 12px;
     }
-
-    /* 输入框区域 */
     #inputArea {
       flex: 0 0 auto;
       border-top: 1px solid #e5e7eb;
       background: #fff;
       padding: 8px 12px;
     }
-
+    /* 底部留出文件名条高度，防止内容被遮挡 */
+    #fileDisplay {
+      height: 100%;
+      overflow-y: auto;
+      padding: 16px 16px 36px 16px;
+      font-size: 0.875rem;
+      color: #374151;
+      font-family: monospace;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
     @keyframes danmaku {
       from { transform: translateX(110vw); }
       to   { transform: translateX(-110%); }
@@ -91,10 +84,6 @@
       outline: 4px solid #ef4444 !important;
       outline-offset: 2px;
     }
-    #fileDisplay {
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
     .msg-bubble {
       display: inline-block;
       max-width: 100%;
@@ -113,7 +102,7 @@
   <!-- 要求回答弹窗 -->
   <div id="requiredModal"
     style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.6);
-           display:none;align-items:center;justify-content:center;padding:16px;">
+           align-items:center;justify-content:center;padding:16px;">
     <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
       <div style="font-size:3rem;margin-bottom:12px;">📣</div>
       <p style="color:#1f2937;font-weight:600;font-size:1rem;line-height:1.6;margin-bottom:20px;">
@@ -155,10 +144,8 @@
 
     <!-- 文件展示区 -->
     <div id="fileSection">
-      <!-- 弹幕层 -->
       <div id="danmakuZone" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:10;"></div>
 
-      <!-- 上传按钮（主持人） -->
       <div id="uploadBtn" style="display:none;position:absolute;top:8px;right:8px;z-index:20;">
         <label style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;
           background:#6366f1;color:#fff;font-size:0.75rem;font-weight:700;
@@ -168,9 +155,7 @@
         </label>
       </div>
 
-      <!-- 文件内容 -->
-      <div id="fileDisplay" style="height:100%;overflow-y:auto;padding:16px;font-size:0.875rem;
-        color:#374151;font-family:monospace;line-height:1.6;">
+      <div id="fileDisplay">
         <div id="filePlaceholder" style="display:flex;flex-direction:column;align-items:center;
           justify-content:center;height:100%;color:#9ca3af;user-select:none;">
           <span style="font-size:2.5rem;margin-bottom:8px;">📄</span>
@@ -178,7 +163,6 @@
         </div>
       </div>
 
-      <!-- 文件名条 -->
       <div id="fileNameBar" style="display:none;position:absolute;bottom:0;left:0;right:0;
         background:rgba(249,250,251,0.95);border-top:1px solid #e5e7eb;
         padding:3px 12px;font-size:0.7rem;color:#6b7280;font-family:monospace;
@@ -189,7 +173,6 @@
     <!-- 评论区 -->
     <div id="commentSection">
 
-      <!-- 置顶消息 -->
       <div id="pinnedBar" style="display:none;flex-shrink:0;background:#fffbeb;
         border-bottom:1px solid #fde68a;padding:8px 12px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
@@ -201,10 +184,8 @@
         </div>
       </div>
 
-      <!-- 消息列表 -->
       <div id="msgList"></div>
 
-      <!-- 输入框 -->
       <div id="inputArea">
         <div style="display:flex;gap:8px;align-items:center;">
           <input
@@ -227,7 +208,7 @@
       </div>
 
     </div>
-  </div><!-- end appRoot -->
+  </div>
 
   <script>
     // ─── 会话加载 ──────────────────────────────────
@@ -245,11 +226,12 @@
       document.getElementById('uploadBtn').style.display = 'block';
     }
 
-    // ─── 状态 ──────────────────────────────────────
+    // ─── 状态变量 ──────────────────────────────────
     let lastFileContent = null;
     let lastMsgCount = -1;
     let lastPinnedId = null;
-    let isRequiredActive = false;
+    let isRequiredActive = false;  // 弹窗是否已显示
+    let isDismissing = false;       // 是否正在执行关闭（防止轮询再次触发）
     let seenAnnouncementTime = null;
 
     // ─── 轮询 ──────────────────────────────────────
@@ -272,10 +254,12 @@
       if (s.fileContent && s.fileContent !== lastFileContent) {
         lastFileContent = s.fileContent;
         const fd = document.getElementById('fileDisplay');
+        const placeholder = document.getElementById('filePlaceholder');
+        if (placeholder) placeholder.remove();
         fd.textContent = s.fileContent;
         if (s.fileName) {
           const bar = document.getElementById('fileNameBar');
-          bar.textContent = `📄 ${s.fileName}`;
+          bar.textContent = '📄 ' + s.fileName;
           bar.style.display = 'block';
         }
       }
@@ -294,7 +278,12 @@
       }
 
       // 要求回答
-      if (s.isRequired && !isRequiredActive) {
+      // 服务器已清除且不在关闭中：重置本地标志
+      if (!s.isRequired && !isDismissing) {
+        isRequiredActive = false;
+      }
+      // 服务器要求 且 本地未激活 且 不在关闭流程中：才弹窗
+      if (s.isRequired && !isRequiredActive && !isDismissing) {
         showRequiredModal();
       }
     }
@@ -304,7 +293,6 @@
       const list = document.getElementById('msgList');
       const atBottom = list.scrollHeight - list.clientHeight <= list.scrollTop + 30;
 
-      // 置顶
       const pinned = msgs.find(m => m.id === pinnedId);
       const bar = document.getElementById('pinnedBar');
       if (pinned) {
@@ -319,28 +307,24 @@
       msgs.forEach(msg => {
         const isHostMsg = msg.is_host === 1 || msg.is_host === true;
         const isPinned = msg.id === pinnedId;
-
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:flex-start;gap:6px;margin-bottom:8px;';
-
-        row.innerHTML = `
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;flex-wrap:wrap;">
-              <span style="font-size:0.75rem;font-weight:700;color:${isHostMsg ? '#4338ca' : '#6b7280'};">
-                ${esc(msg.nickname)}${isHostMsg ? ' 👑' : ''}
-              </span>
-              ${isPinned ? '<span style="color:#f59e0b;font-size:0.75rem;">📌</span>' : ''}
-              <span style="font-size:0.7rem;color:#9ca3af;">${fmtTime(msg.time)}</span>
-            </div>
-            <span class="msg-bubble">${esc(msg.content)}</span>
-          </div>
-          ${isHost
-            ? `<button onclick="pinMsg('${msg.id}')"
-                style="flex-shrink:0;background:none;border:none;cursor:pointer;
-                       font-size:1rem;color:#d1d5db;padding:2px;margin-top:2px;"
-                title="置顶此消息">📌</button>`
-            : ''}
-        `;
+        row.innerHTML =
+          '<div style="flex:1;min-width:0;">' +
+            '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;flex-wrap:wrap;">' +
+              '<span style="font-size:0.75rem;font-weight:700;color:' + (isHostMsg ? '#4338ca' : '#6b7280') + ';">' +
+                esc(msg.nickname) + (isHostMsg ? ' 👑' : '') +
+              '</span>' +
+              (isPinned ? '<span style="color:#f59e0b;font-size:0.75rem;">📌</span>' : '') +
+              '<span style="font-size:0.7rem;color:#9ca3af;">' + fmtTime(msg.time) + '</span>' +
+            '</div>' +
+            '<span class="msg-bubble">' + esc(msg.content) + '</span>' +
+          '</div>' +
+          (isHost
+            ? '<button onclick="pinMsg(\'' + msg.id + '\')" ' +
+              'style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:1rem;color:#d1d5db;padding:2px;margin-top:2px;" ' +
+              'title="置顶此消息">📌</button>'
+            : '');
         list.appendChild(row);
       });
 
@@ -352,11 +336,9 @@
       const input = document.getElementById('msgInput');
       const content = input.value.trim();
       if (!content) return;
-
       const btn = document.querySelector('#inputArea button');
       btn.textContent = '发送中...';
       btn.disabled = true;
-
       try {
         const res = await fetch('/api/message', {
           method: 'POST',
@@ -364,12 +346,8 @@
           body: JSON.stringify({ roomId, nickname, token, content }),
         });
         const json = await res.json();
-        if (json.error) {
-          alert('发送失败：' + json.error);
-        } else {
-          input.value = '';
-          await poll();
-        }
+        if (json.error) alert('发送失败：' + json.error);
+        else { input.value = ''; await poll(); }
       } catch(e) {
         alert('网络错误：' + e.message);
       } finally {
@@ -392,11 +370,7 @@
     async function uploadFile(input) {
       const file = input.files[0];
       if (!file) return;
-      if (!/\.(txt|md)$/i.test(file.name)) {
-        alert('仅支持 .txt 或 .md 格式文件');
-        input.value = '';
-        return;
-      }
+      if (!/\.(txt|md)$/i.test(file.name)) { alert('仅支持 .txt 或 .md 格式文件'); input.value = ''; return; }
       const content = await file.text();
       const res = await fetch('/api/upload-file', {
         method: 'POST',
@@ -416,8 +390,8 @@
         setTimeout(() => {
           const el = document.createElement('div');
           el.className = 'danmaku-item';
-          el.textContent = `📢 ${text}`;
-          el.style.top = `${topPct}%`;
+          el.textContent = '📢 ' + text;
+          el.style.top = topPct + '%';
           zone.appendChild(el);
           el.addEventListener('animationend', () => el.remove());
         }, i * 1800);
@@ -428,16 +402,14 @@
     function showRequiredModal() {
       isRequiredActive = true;
       document.getElementById('appHeader').classList.add('required-ring');
-
       const modal = document.getElementById('requiredModal');
       const closeBtn = document.getElementById('closeModalBtn');
       const countdown = document.getElementById('modalCountdown');
       modal.style.display = 'flex';
       closeBtn.style.display = 'none';
       countdown.style.display = 'block';
-
       let sec = 5;
-      countdown.textContent = `${sec} 秒后可关闭...`;
+      countdown.textContent = sec + ' 秒后可关闭...';
       const t = setInterval(() => {
         sec--;
         if (sec <= 0) {
@@ -445,27 +417,32 @@
           countdown.style.display = 'none';
           closeBtn.style.display = 'block';
         } else {
-          countdown.textContent = `${sec} 秒后可关闭...`;
+          countdown.textContent = sec + ' 秒后可关闭...';
         }
       }, 1000);
     }
 
     async function dismissRequiredModal() {
+      isDismissing = true;
+      // 立刻隐藏，防止用户重复点击
       document.getElementById('requiredModal').style.display = 'none';
+      document.getElementById('closeModalBtn').style.display = 'none';
       document.getElementById('appHeader').classList.remove('required-ring');
+      try {
+        await fetch('/api/clear-required', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, nickname, token }),
+        });
+      } catch {}
+      // 服务器确认清除后才重置，防止轮询重新触发
       isRequiredActive = false;
-      await fetch('/api/clear-required', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, nickname, token }),
-      });
+      isDismissing = false;
     }
 
     // ─── 工具 ───────────────────────────────────────
     function esc(s) {
-      return String(s)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
     function fmtTime(ts) {
       return new Date(ts).toLocaleTimeString('zh-CN', { hour:'2-digit', minute:'2-digit' });
