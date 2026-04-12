@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>主持人控制台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 pb-10">
+
+  <div class="max-w-lg mx-auto px-4 pt-5">
+
+    <!-- 顶栏 -->
+    <div class="flex items-center gap-3 mb-6">
+      <a href="/room.html"
+        class="text-indigo-500 hover:text-indigo-700 font-semibold flex items-center gap-1">
+        ← 返回会议
+      </a>
+      <h1 class="text-xl font-bold text-gray-800">主持人控制台</h1>
+    </div>
+
+    <!-- 要求回答 -->
+    <div class="bg-white rounded-2xl shadow-sm p-5 mb-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xl">🎤</span>
+        <h2 class="font-bold text-gray-800 text-base">要求成员回答</h2>
+      </div>
+      <p class="text-xs text-gray-400 mb-4">
+        勾选后点击按钮，被选中成员界面将弹出提示框
+      </p>
+
+      <div id="memberList" class="space-y-1 mb-4 min-h-12">
+        <p class="text-gray-400 text-sm">加载成员列表中...</p>
+      </div>
+
+      <button onclick="requireAnswer()"
+        class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition active:scale-95">
+        要求回答
+      </button>
+      <p id="requireFeedback" class="text-center text-sm mt-2 min-h-5"></p>
+    </div>
+
+    <!-- 发布通告 -->
+    <div class="bg-white rounded-2xl shadow-sm p-5">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xl">📢</span>
+        <h2 class="font-bold text-gray-800 text-base">发布通告</h2>
+      </div>
+      <p class="text-xs text-gray-400 mb-4">
+        通告将以弹幕形式在所有成员的文件展示区滚动显示约15秒
+      </p>
+
+      <textarea id="announcementInput"
+        maxlength="80"
+        rows="3"
+        placeholder="例：请大家重点关注第三段内容..."
+        class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm
+          focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none">
+      </textarea>
+      <div class="flex justify-end">
+        <span id="charCount" class="text-xs text-gray-400 mt-1">0 / 80</span>
+      </div>
+
+      <button onclick="sendAnnouncement()"
+        class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition active:scale-95">
+        发布通告
+      </button>
+      <p id="announceFeedback" class="text-center text-sm mt-2 min-h-5"></p>
+    </div>
+
+  </div>
+
+  <script>
+    // 会话校验
+    const S = JSON.parse(sessionStorage.getItem('meeting') || 'null');
+    if (!S || !S.isHost) location.href = '/';
+    const { roomId, nickname, token, hostToken } = S;
+
+    // 字符计数
+    const announcementInput = document.getElementById('announcementInput');
+    const charCount = document.getElementById('charCount');
+    announcementInput.addEventListener('input', () => {
+      charCount.textContent = `${announcementInput.value.length} / 80`;
+    });
+
+    // ─── 加载成员列表 ────────────────────────────────
+    async function loadMembers() {
+      try {
+        const res = await fetch(
+          `/api/state?roomId=${roomId}&nickname=${encodeURIComponent(nickname)}&token=${token}`
+        );
+        const s = await res.json();
+        if (s.error) return;
+
+        const list = document.getElementById('memberList');
+        list.innerHTML = '';
+
+        if (s.members.length === 0) {
+          list.innerHTML = '<p class="text-gray-400 text-sm">暂无在线成员</p>';
+          return;
+        }
+
+        s.members.forEach((m) => {
+          const label = document.createElement('label');
+          label.className =
+            'flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer select-none';
+          label.innerHTML = `
+            <input type="checkbox" value="${esc(m)}"
+              class="w-4 h-4 text-indigo-500 rounded accent-indigo-500" />
+            <span class="text-sm text-gray-700">
+              ${esc(m)}${m === nickname ? ' <span class="text-xs text-gray-400">（你）</span>' : ''}
+            </span>
+          `;
+          list.appendChild(label);
+        });
+      } catch {
+        document.getElementById('memberList').innerHTML =
+          '<p class="text-red-400 text-sm">加载失败，请刷新</p>';
+      }
+    }
+
+    // ─── 要求回答 ────────────────────────────────────
+    async function requireAnswer() {
+      const checked = [...document.querySelectorAll('#memberList input:checked')]
+        .map((el) => el.value);
+      if (checked.length === 0) {
+        feedback('requireFeedback', '请至少勾选一位成员', 'red');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/require-answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, nickname, hostToken, members: checked }),
+        });
+        const json = await res.json();
+        if (json.error) feedback('requireFeedback', json.error, 'red');
+        else feedback('requireFeedback', `✅ 已通知 ${checked.length} 位成员`, 'green');
+      } catch {
+        feedback('requireFeedback', '操作失败，请重试', 'red');
+      }
+    }
+
+    // ─── 发布通告 ────────────────────────────────────
+    async function sendAnnouncement() {
+      const content = announcementInput.value.trim();
+      if (!content) {
+        feedback('announceFeedback', '请输入通告内容', 'red');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/announcement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, nickname, hostToken, content }),
+        });
+        const json = await res.json();
+        if (json.error) feedback('announceFeedback', json.error, 'red');
+        else {
+          feedback('announceFeedback', '✅ 通告已发布', 'green');
+          announcementInput.value = '';
+          charCount.textContent = '0 / 80';
+        }
+      } catch {
+        feedback('announceFeedback', '发布失败，请重试', 'red');
+      }
+    }
+
+    // ─── 工具 ────────────────────────────────────────
+    function feedback(id, msg, color) {
+      const el = document.getElementById(id);
+      el.textContent = msg;
+      el.className = `text-center text-sm mt-2 ${color === 'green' ? 'text-green-600' : 'text-red-500'}`;
+      clearTimeout(el._t);
+      el._t = setTimeout(() => (el.textContent = ''), 4000);
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    loadMembers();
+    setInterval(loadMembers, 5000);
+  </script>
+</body>
+</html>
