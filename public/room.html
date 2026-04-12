@@ -352,13 +352,30 @@
       const input = document.getElementById('msgInput');
       const content = input.value.trim();
       if (!content) return;
-      input.value = '';
-      await fetch('/api/message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, nickname, token, content }),
-      });
-      poll();
+
+      const btn = document.querySelector('#inputArea button');
+      btn.textContent = '发送中...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, nickname, token, content }),
+        });
+        const json = await res.json();
+        if (json.error) {
+          alert('发送失败：' + json.error);
+        } else {
+          input.value = '';
+          await poll();
+        }
+      } catch(e) {
+        alert('网络错误：' + e.message);
+      } finally {
+        btn.textContent = '发送';
+        btn.disabled = false;
+      }
     }
 
     // ─── 置顶消息 ───────────────────────────────────
