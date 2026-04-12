@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>会议室</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes danmaku {
+      from { transform: translateX(110vw); }
+      to   { transform: translateX(-110%); }
+    }
+    .danmaku-item {
+      position: absolute;
+      white-space: nowrap;
+      animation: danmaku 9s linear forwards;
+      pointer-events: none;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #dc2626;
+      background: rgba(255, 255, 255, 0.88);
+      border: 2px solid #fca5a5;
+      padding: 2px 10px;
+      border-radius: 999px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .required-ring {
+      outline: 4px solid #ef4444;
+      outline-offset: 2px;
+    }
+    #fileDisplay {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col bg-gray-50 overflow-hidden">
+
+  <!-- ① 要求回答弹窗 -->
+  <div id="requiredModal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-xs text-center">
+      <div class="text-5xl mb-4">📣</div>
+      <p class="text-gray-800 font-semibold text-base leading-relaxed mb-5">
+        你被主持人请求表达个人看法，请务必在评论区回复
+      </p>
+      <div id="modalCountdown" class="text-gray-400 text-sm mb-2">5 秒后可关闭...</div>
+      <button id="closeModalBtn"
+        onclick="dismissRequiredModal()"
+        class="hidden w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition">
+        点击关闭
+      </button>
+    </div>
+  </div>
+
+  <!-- ② 顶栏 -->
+  <header id="appHeader"
+    class="shrink-0 bg-indigo-600 text-white px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="font-mono font-bold text-base tracking-wider" id="hRoomId"></span>
+      <span class="text-indigo-200 text-sm truncate" id="hNickname"></span>
+      <span id="hHostBadge"
+        class="hidden shrink-0 bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-full font-bold">
+        主持人
+      </span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <span class="text-indigo-200 text-xs" id="hMemberCount"></span>
+      <a id="hHostLink" href="/host.html"
+        class="hidden bg-white text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-full hover:bg-indigo-50 transition">
+        控制台
+      </a>
+    </div>
+  </header>
+
+  <!-- ③ 文件展示区 -->
+  <div class="shrink-0 relative bg-white border-b" style="height:38vh; min-height:180px;">
+    <!-- 弹幕容器 -->
+    <div id="danmakuZone" class="absolute inset-0 overflow-hidden pointer-events-none z-10"></div>
+
+    <!-- 上传按钮（主持人） -->
+    <div id="uploadBtn" class="hidden absolute top-2 right-2 z-20">
+      <label class="cursor-pointer inline-flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600
+        text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow transition">
+        📁 上传文件
+        <input type="file" accept=".txt,.md" class="hidden" onchange="uploadFile(this)" />
+      </label>
+    </div>
+
+    <!-- 文件内容 -->
+    <div id="fileDisplay"
+      class="h-full overflow-auto p-4 text-sm text-gray-700 font-mono leading-relaxed">
+      <div class="flex flex-col items-center justify-center h-full text-gray-400 select-none">
+        <span class="text-4xl mb-2">📄</span>
+        <span>等待主持人上传文件</span>
+      </div>
+    </div>
+
+    <!-- 文件名 -->
+    <div id="fileNameBar"
+      class="hidden absolute bottom-0 left-0 right-0 bg-gray-50/90 border-t px-3 py-1 text-xs text-gray-500 font-mono truncate">
+    </div>
+  </div>
+
+  <!-- ④ 评论区 -->
+  <div class="flex flex-col flex-1 min-h-0">
+
+    <!-- 置顶消息 -->
+    <div id="pinnedBar" class="hidden shrink-0 bg-amber-50 border-b border-amber-200 px-3 py-2">
+      <div class="flex items-start gap-2">
+        <span class="text-amber-500 text-xs font-bold shrink-0 mt-0.5">📌 置顶</span>
+        <div class="min-w-0">
+          <span class="text-xs text-amber-700 font-semibold" id="pinnedNick"></span>
+          <p class="text-sm text-gray-700 break-words" id="pinnedContent"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 消息列表 -->
+    <div id="msgList" class="flex-1 overflow-y-auto px-3 py-2 space-y-2 min-h-0"></div>
+
+    <!-- 输入框 -->
+    <div class="shrink-0 border-t bg-white px-3 py-2 flex gap-2 items-center">
+      <input
+        id="msgInput"
+        type="text"
+        maxlength="500"
+        placeholder="在此输入评论..."
+        class="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        onkeydown="if(event.key==='Enter') sendMsg()"
+      />
+      <button onclick="sendMsg()"
+        class="shrink-0 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-full transition active:scale-95">
+        发送
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // ─── 会话加载 ──────────────────────────────────────
+    const S = JSON.parse(sessionStorage.getItem('meeting') || 'null');
+    if (!S) location.href = '/';
+    const { roomId, nickname, isHost, token, hostToken } = S;
+
+    // ─── 初始化 UI ─────────────────────────────────────
+    document.getElementById('hRoomId').textContent = roomId;
+    document.getElementById('hNickname').textContent = nickname;
+    if (isHost) {
+      document.getElementById('hHostBadge').classList.remove('hidden');
+      document.getElementById('hHostLink').classList.remove('hidden');
+      document.getElementById('uploadBtn').classList.remove('hidden');
+    }
+
+    // ─── 状态 ──────────────────────────────────────────
+    let lastFileContent = null;
+    let lastMsgCount = -1;
+    let lastPinnedId = null;
+    let isRequiredActive = false;
+    let seenAnnouncementTime = null;
+
+    // ─── 轮询主循环 ────────────────────────────────────
+    async function poll() {
+      try {
+        const res = await fetch(
+          `/api/state?roomId=${roomId}&nickname=${encodeURIComponent(nickname)}&token=${token}`
+        );
+        if (res.status === 401) { sessionStorage.clear(); location.href = '/'; return; }
+        if (!res.ok) return;
+        const s = await res.json();
+        applyState(s);
+      } catch { /* 网络抖动，静默忽略 */ }
+    }
+
+    function applyState(s) {
+      // 成员数
+      document.getElementById('hMemberCount').textContent = `${s.members.length} 人在线`;
+
+      // 文件内容
+      if (s.fileContent && s.fileContent !== lastFileContent) {
+        lastFileContent = s.fileContent;
+        document.getElementById('fileDisplay').textContent = s.fileContent;
+        if (s.fileName) {
+          const bar = document.getElementById('fileNameBar');
+          bar.textContent = `📄 ${s.fileName}`;
+          bar.classList.remove('hidden');
+        }
+      }
+
+      // 消息（长度变化时刷新）
+      if (s.messages.length !== lastMsgCount || s.pinnedMessageId !== lastPinnedId) {
+        lastMsgCount = s.messages.length;
+        lastPinnedId = s.pinnedMessageId;
+        renderMessages(s.messages, s.pinnedMessageId);
+      }
+
+      // 弹幕通告
+      if (s.announcement && s.announcementTime !== seenAnnouncementTime) {
+        seenAnnouncementTime = s.announcementTime;
+        fireDanmaku(s.announcement);
+      }
+
+      // 要求回答
+      if (s.isRequired && !isRequiredActive) {
+        showRequiredModal();
+      }
+    }
+
+    // ─── 消息渲染 ──────────────────────────────────────
+    function renderMessages(msgs, pinnedId) {
+      const list = document.getElementById('msgList');
+      const atBottom = list.scrollHeight - list.clientHeight <= list.scrollTop + 20;
+
+      // 置顶消息
+      const pinned = msgs.find((m) => m.id === pinnedId);
+      const bar = document.getElementById('pinnedBar');
+      if (pinned) {
+        document.getElementById('pinnedNick').textContent = pinned.nickname;
+        document.getElementById('pinnedContent').textContent = pinned.content;
+        bar.classList.remove('hidden');
+      } else {
+        bar.classList.add('hidden');
+      }
+
+      list.innerHTML = '';
+      msgs.forEach((msg) => {
+        const isHostMsg = msg.is_host === 1 || msg.is_host === true;
+        const isPinned = msg.id === pinnedId;
+
+        const div = document.createElement('div');
+        div.className = 'flex items-start gap-2';
+
+        div.innerHTML = `
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1 mb-0.5 flex-wrap">
+              <span class="text-xs font-bold ${isHostMsg ? 'text-indigo-600' : 'text-gray-500'}">
+                ${esc(msg.nickname)}${isHostMsg ? ' 👑' : ''}
+              </span>
+              ${isPinned ? '<span class="text-amber-500 text-xs">📌</span>' : ''}
+              <span class="text-xs text-gray-400">${fmtTime(msg.time)}</span>
+            </div>
+            <p class="text-sm text-gray-800 bg-gray-100 rounded-2xl px-3 py-2 inline-block
+              max-w-full break-words leading-snug">${esc(msg.content)}</p>
+          </div>
+          ${isHost
+            ? `<button onclick="pinMsg('${msg.id}')"
+                class="shrink-0 mt-1 text-gray-300 hover:text-amber-500 text-base transition"
+                title="置顶此消息">📌</button>`
+            : ''}
+        `;
+        list.appendChild(div);
+      });
+
+      if (atBottom) list.scrollTop = list.scrollHeight;
+    }
+
+    // ─── 发送消息 ──────────────────────────────────────
+    async function sendMsg() {
+      const input = document.getElementById('msgInput');
+      const content = input.value.trim();
+      if (!content) return;
+      input.value = '';
+      await fetch('/api/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, nickname, token, content }),
+      });
+      poll();
+    }
+
+    // ─── 置顶消息（主持人）──────────────────────────────
+    async function pinMsg(msgId) {
+      await fetch('/api/pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, nickname, hostToken, messageId: msgId }),
+      });
+      poll();
+    }
+
+    // ─── 上传文件（主持人）──────────────────────────────
+    async function uploadFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (!/\.(txt|md)$/i.test(file.name)) {
+        alert('仅支持 .txt 或 .md 格式文件');
+        input.value = '';
+        return;
+      }
+      const content = await file.text();
+      const res = await fetch('/api/upload-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, nickname, hostToken, content, fileName: file.name }),
+      });
+      const json = await res.json();
+      if (json.error) alert(json.error);
+      else poll();
+      input.value = '';
+    }
+
+    // ─── 弹幕通告 ──────────────────────────────────────
+    function fireDanmaku(text) {
+      const zone = document.getElementById('danmakuZone');
+      const lanes = [15, 45, 75]; // 三条轨道，百分比高度
+      lanes.forEach((topPct, i) => {
+        setTimeout(() => {
+          const el = document.createElement('div');
+          el.className = 'danmaku-item';
+          el.textContent = `📢 ${text}`;
+          el.style.top = `${topPct}%`;
+          zone.appendChild(el);
+          el.addEventListener('animationend', () => el.remove());
+        }, i * 1800);
+      });
+    }
+
+    // ─── 要求回答弹窗 ──────────────────────────────────
+    function showRequiredModal() {
+      isRequiredActive = true;
+      document.getElementById('appHeader').classList.add('required-ring');
+      document.body.classList.add('required-ring');
+
+      const modal = document.getElementById('requiredModal');
+      const closeBtn = document.getElementById('closeModalBtn');
+      const countdown = document.getElementById('modalCountdown');
+      modal.classList.remove('hidden');
+      closeBtn.classList.add('hidden');
+      countdown.classList.remove('hidden');
+
+      let sec = 5;
+      countdown.textContent = `${sec} 秒后可关闭...`;
+      const t = setInterval(() => {
+        sec--;
+        if (sec <= 0) {
+          clearInterval(t);
+          countdown.classList.add('hidden');
+          closeBtn.classList.remove('hidden');
+        } else {
+          countdown.textContent = `${sec} 秒后可关闭...`;
+        }
+      }, 1000);
+    }
+
+    async function dismissRequiredModal() {
+      document.getElementById('requiredModal').classList.add('hidden');
+      document.getElementById('appHeader').classList.remove('required-ring');
+      document.body.classList.remove('required-ring');
+      isRequiredActive = false;
+
+      await fetch('/api/clear-required', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, nickname, token }),
+      });
+    }
+
+    // ─── 工具函数 ──────────────────────────────────────
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+    function fmtTime(ts) {
+      return new Date(ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ─── 启动 ──────────────────────────────────────────
+    poll();
+    setInterval(poll, 3000);
+  </script>
+</body>
+</html>
