@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>会议室</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     html, body {
@@ -40,7 +41,33 @@
       font-family: monospace; line-height: 1.6;
       white-space: pre-wrap; word-break: break-all;
     }
-
+#fileDisplay h1, #fileDisplay h2, #fileDisplay h3 {
+  font-weight: 700; margin: 12px 0 6px; color: #1f2937;
+  font-family: sans-serif;
+}
+#fileDisplay h1 { font-size: 1.4rem; }
+#fileDisplay h2 { font-size: 1.2rem; }
+#fileDisplay h3 { font-size: 1rem; }
+#fileDisplay p  { margin: 6px 0; font-family: sans-serif; }
+#fileDisplay ul, #fileDisplay ol {
+  padding-left: 20px; margin: 6px 0; font-family: sans-serif;
+}
+#fileDisplay li { margin: 3px 0; }
+#fileDisplay code {
+  background: #f3f4f6; padding: 1px 6px;
+  border-radius: 4px; font-size: 0.85em;
+}
+#fileDisplay pre {
+  background: #f3f4f6; padding: 10px;
+  border-radius: 8px; overflow-x: auto; margin: 8px 0;
+}
+#fileDisplay blockquote {
+  border-left: 3px solid #6366f1;
+  padding-left: 10px; color: #6b7280; margin: 8px 0;
+}
+#fileDisplay a { color: #6366f1; text-decoration: underline; }
+#fileDisplay strong { font-weight: 700; }
+#fileDisplay hr { border: none; border-top: 1px solid #e5e7eb; margin: 12px 0; }
     /* 汉堡菜单下拉 */
     #menuDropdown {
       display: none;
@@ -359,9 +386,14 @@
       if (s.fileContent && s.fileContent !== lastFileContent) {
         lastFileContent = s.fileContent;
         const fd = document.getElementById('fileDisplay');
-        const placeholder = document.getElementById('filePlaceholder');
-        if (placeholder) placeholder.remove();
-        fd.textContent = s.fileContent;
+const placeholder = document.getElementById('filePlaceholder');
+if (placeholder) placeholder.remove();
+// 判断是否为 md 文件，是则渲染，否则纯文本
+if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
+  fd.innerHTML = marked.parse(s.fileContent);
+} else {
+  fd.textContent = s.fileContent;
+}
         if (s.fileName) {
           const bar = document.getElementById('fileNameBar');
           bar.textContent = '📄 ' + s.fileName;
