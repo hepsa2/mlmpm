@@ -1,4 +1,10 @@
-# 在线会议室
+# 在线加密会议室
+## 特点
+- 全免费手机可部署
+- 无需花钱租用服务器
+- 采用AES-256加密
+- 无语音功能，声纹无忧
+- 支持.txt.md.pdf
 ### 文件结构
 ```
 your-repo/
@@ -34,3 +40,9 @@ your-repo/
 ```
 SELECT * FROM rooms ORDER BY created_at DESC;
 ```
+### cloudflare端
+分三大段、一句话，把sql代码分四次上传cloudflareD1数据库
+### 注意
+cloudflare必须识别仓库代码成pages而不是workers
+
+为此可以先采用迷惑性手段，如先绑定不加js的html
