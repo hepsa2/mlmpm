@@ -30,3 +30,7 @@ your-repo/
   └─ 浏览器用密钥解密 → 显示明文
   └─ 没有密钥的人看到 "🔒 [需要密钥才能查看]"
 ```
+### 查看会议室数据是否清除 
+```
+SELECT * FROM rooms ORDER BY created_at DESC;
+```
