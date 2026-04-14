@@ -8,121 +8,61 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     * { box-sizing: border-box; }
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-      overflow: hidden; background: #f9fafb;
-    }
-    #appRoot {
-      display: flex; flex-direction: column;
-      height: 100vh; height: 100dvh;
-    }
-    #appHeader { flex: 0 0 auto; }
+    html, body { height:100%; margin:0; padding:0; overflow:hidden; background:#f9fafb; }
+    #appRoot { display:flex; flex-direction:column; height:100vh; height:100dvh; }
+    #appHeader { flex:0 0 auto; }
     #fileSection {
-      flex: 0 0 38vh; min-height: 160px; max-height: 320px;
-      position: relative; background: #fff;
-      border-bottom: 1px solid #e5e7eb; overflow: hidden;
+      flex:0 0 38vh; min-height:160px; max-height:320px;
+      position:relative; background:#fff; border-bottom:1px solid #e5e7eb; overflow:hidden;
     }
-    #commentSection {
-      flex: 1 1 0; display: flex; flex-direction: column;
-      min-height: 0; background: #fff;
-    }
-    #pinnedBar { flex: 0 0 auto; }
-    #msgList {
-      flex: 1 1 0; min-height: 0; overflow-y: auto; padding: 8px 12px;
-    }
-    #inputArea {
-      flex: 0 0 auto; border-top: 1px solid #e5e7eb;
-      background: #fff; padding: 8px 12px;
-    }
+    #commentSection { flex:1 1 0; display:flex; flex-direction:column; min-height:0; background:#fff; }
+    #pinnedBar { flex:0 0 auto; }
+    #msgList { flex:1 1 0; min-height:0; overflow-y:auto; padding:8px 12px; }
+    #inputArea { flex:0 0 auto; border-top:1px solid #e5e7eb; background:#fff; padding:8px 12px; }
     #fileDisplay {
-      height: 100%; overflow-y: auto;
-      padding: 16px 16px 36px 16px;
-      font-size: 0.875rem; color: #374151;
-      font-family: monospace; line-height: 1.6;
-      white-space: pre-wrap; word-break: break-all;
+      height:100%; overflow-y:auto; padding:16px 16px 36px 16px;
+      font-size:0.875rem; color:#374151; font-family:monospace;
+      line-height:1.6; white-space:pre-wrap; word-break:break-all;
     }
-#fileDisplay h1, #fileDisplay h2, #fileDisplay h3 {
-  font-weight: 700; margin: 12px 0 6px; color: #1f2937;
-  font-family: sans-serif;
-}
-#fileDisplay h1 { font-size: 1.4rem; }
-#fileDisplay h2 { font-size: 1.2rem; }
-#fileDisplay h3 { font-size: 1rem; }
-#fileDisplay p  { margin: 6px 0; font-family: sans-serif; }
-#fileDisplay ul, #fileDisplay ol {
-  padding-left: 20px; margin: 6px 0; font-family: sans-serif;
-}
-#fileDisplay li { margin: 3px 0; }
-#fileDisplay code {
-  background: #f3f4f6; padding: 1px 6px;
-  border-radius: 4px; font-size: 0.85em;
-}
-#fileDisplay pre {
-  background: #f3f4f6; padding: 10px;
-  border-radius: 8px; overflow-x: auto; margin: 8px 0;
-}
-#fileDisplay blockquote {
-  border-left: 3px solid #6366f1;
-  padding-left: 10px; color: #6b7280; margin: 8px 0;
-}
-#fileDisplay a { color: #6366f1; text-decoration: underline; }
-#fileDisplay strong { font-weight: 700; }
-#fileDisplay hr { border: none; border-top: 1px solid #e5e7eb; margin: 12px 0; }
-    /* 汉堡菜单下拉 */
-    #menuDropdown {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 220px;
-      background: #fff;
-      border-radius: 0 0 14px 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-      z-index: 200;
-      overflow: hidden;
-    }
-    #menuDropdown.open { display: block; }
-    .menu-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 13px 18px; font-size: 0.9rem;
-      cursor: pointer; border: none; background: none;
-      width: 100%; text-align: left; color: #1f2937;
-      transition: background 0.15s;
-    }
-    .menu-item:hover { background: #f3f4f6; }
-    .menu-item.danger { color: #ef4444; }
-    .menu-item.info {
-      background: #eef2ff; color: #4338ca;
-      font-family: monospace; font-weight: 700;
-      letter-spacing: 2px; cursor: default; font-size: 1rem;
-    }
-    .menu-item.info:hover { background: #eef2ff; }
-    .menu-divider { height: 1px; background: #f3f4f6; }
-
-    /* 汉堡 → X 动画 */
-    .bar { display:block; width:20px; height:2px; background:#fff; border-radius:2px; transition: all 0.25s; }
-    .bar2 { margin: 4px 0; }
-    .ham-open .bar1 { transform: translateY(6px) rotate(45deg); }
-    .ham-open .bar2 { opacity: 0; transform: scaleX(0); }
-    .ham-open .bar3 { transform: translateY(-6px) rotate(-45deg); }
-
-    @keyframes danmaku {
-      from { transform: translateX(110vw); }
-      to   { transform: translateX(-110%); }
-    }
+    /* Markdown 样式 */
+    #fileDisplay h1,#fileDisplay h2,#fileDisplay h3 { font-weight:700; margin:12px 0 6px; color:#1f2937; font-family:sans-serif; }
+    #fileDisplay h1 { font-size:1.4rem; } #fileDisplay h2 { font-size:1.2rem; } #fileDisplay h3 { font-size:1rem; }
+    #fileDisplay p { margin:6px 0; font-family:sans-serif; white-space:normal; }
+    #fileDisplay ul,#fileDisplay ol { padding-left:20px; margin:6px 0; font-family:sans-serif; }
+    #fileDisplay li { margin:3px 0; }
+    #fileDisplay code { background:#f3f4f6; padding:1px 6px; border-radius:4px; font-size:0.85em; }
+    #fileDisplay pre { background:#f3f4f6; padding:10px; border-radius:8px; overflow-x:auto; margin:8px 0; }
+    #fileDisplay blockquote { border-left:3px solid #6366f1; padding-left:10px; color:#6b7280; margin:8px 0; }
+    #fileDisplay a { color:#6366f1; text-decoration:underline; }
+    #fileDisplay strong { font-weight:700; }
+    #fileDisplay hr { border:none; border-top:1px solid #e5e7eb; margin:12px 0; }
+    /* 汉堡菜单 */
+    #menuDropdown { display:none; position:absolute; top:100%; left:0; width:220px; background:#fff; border-radius:0 0 14px 14px; box-shadow:0 8px 24px rgba(0,0,0,0.18); z-index:200; overflow:hidden; }
+    #menuDropdown.open { display:block; }
+    .menu-item { display:flex; align-items:center; gap:10px; padding:13px 18px; font-size:0.9rem; cursor:pointer; border:none; background:none; width:100%; text-align:left; color:#1f2937; transition:background 0.15s; }
+    .menu-item:hover { background:#f3f4f6; }
+    .menu-item.danger { color:#ef4444; }
+    .menu-item.info { background:#eef2ff; color:#4338ca; font-family:monospace; font-weight:700; letter-spacing:2px; cursor:default; font-size:1rem; }
+    .menu-item.info:hover { background:#eef2ff; }
+    .menu-divider { height:1px; background:#f3f4f6; }
+    .bar { display:block; width:20px; height:2px; background:#fff; border-radius:2px; transition:all 0.25s; }
+    .bar2 { margin:4px 0; }
+    .ham-open .bar1 { transform:translateY(6px) rotate(45deg); }
+    .ham-open .bar2 { opacity:0; transform:scaleX(0); }
+    .ham-open .bar3 { transform:translateY(-6px) rotate(-45deg); }
+    /* 弹幕 */
+    @keyframes danmaku { from { transform:translateX(110vw); } to { transform:translateX(-110%); } }
     .danmaku-item {
-      position: absolute; white-space: nowrap;
-      animation: danmaku 9s linear forwards;
-      pointer-events: none; font-size: 1rem; font-weight: 700;
-      color: #dc2626; background: rgba(255,255,255,0.9);
-      border: 2px solid #fca5a5; padding: 2px 12px;
-      border-radius: 999px; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      position:absolute; white-space:nowrap; animation:danmaku 9s linear forwards;
+      pointer-events:none; font-size:1rem; font-weight:700; color:#dc2626;
+      background:rgba(255,255,255,0.9); border:2px solid #fca5a5;
+      padding:2px 12px; border-radius:999px; box-shadow:0 1px 4px rgba(0,0,0,0.15);
     }
-    .required-ring { outline: 4px solid #ef4444 !important; outline-offset: 2px; }
+    .required-ring { outline:4px solid #ef4444 !important; outline-offset:2px; }
     .msg-bubble {
-      display: inline-block; max-width: 100%; word-break: break-word;
-      background: #f3f4f6; border-radius: 16px; padding: 6px 12px;
-      font-size: 0.875rem; line-height: 1.4; color: #1f2937;
+      display:inline-block; max-width:100%; word-break:break-word;
+      background:#f3f4f6; border-radius:16px; padding:6px 12px;
+      font-size:0.875rem; line-height:1.4; color:#1f2937;
     }
   </style>
 </head>
@@ -130,8 +70,7 @@
 
   <!-- 要求回答弹窗 -->
   <div id="requiredModal"
-    style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.6);
-           align-items:center;justify-content:center;padding:16px;">
+    style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;padding:16px;">
     <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
       <div style="font-size:3rem;margin-bottom:12px;">📣</div>
       <p style="color:#1f2937;font-weight:600;font-size:1rem;line-height:1.6;margin-bottom:20px;">
@@ -139,70 +78,40 @@
       </p>
       <div id="modalCountdown" style="color:#9ca3af;font-size:0.875rem;margin-bottom:8px;">5 秒后可关闭...</div>
       <button id="closeModalBtn" onclick="dismissRequiredModal()"
-        style="display:none;width:100%;background:#ef4444;color:#fff;font-weight:700;
-               padding:12px;border-radius:12px;border:none;font-size:1rem;cursor:pointer;">
+        style="display:none;width:100%;background:#ef4444;color:#fff;font-weight:700;padding:12px;border-radius:12px;border:none;font-size:1rem;cursor:pointer;">
         点击关闭
       </button>
     </div>
   </div>
 
-  <!-- 遮罩层（点击关闭菜单） -->
-  <div id="menuOverlay"
-    onclick="closeMenu()"
-    style="display:none;position:fixed;inset:0;z-index:100;"></div>
+  <!-- 菜单遮罩 -->
+  <div id="menuOverlay" onclick="closeMenu()" style="display:none;position:fixed;inset:0;z-index:100;"></div>
 
   <div id="appRoot">
 
     <!-- 顶栏 -->
-    <header id="appHeader" style="background:#4f46e5;color:#fff;padding:10px 16px;
-      display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;">
-
-      <!-- 汉堡按钮 -->
+    <header id="appHeader" style="background:#4f46e5;color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;">
       <div style="position:relative;">
         <button id="hamBtn" onclick="toggleMenu()"
           style="background:none;border:none;cursor:pointer;padding:4px;display:flex;flex-direction:column;justify-content:center;">
-          <span class="bar bar1"></span>
-          <span class="bar bar2"></span>
-          <span class="bar bar3"></span>
+          <span class="bar bar1"></span><span class="bar bar2"></span><span class="bar bar3"></span>
         </button>
-
-        <!-- 下拉菜单 -->
         <div id="menuDropdown">
-          <!-- 会议号 -->
           <div class="menu-item info" id="menuRoomId"></div>
           <div class="menu-divider"></div>
-          <!-- 控制台（主持人） -->
-          <a id="menuConsole" href="/host.html" class="menu-item" style="display:none;text-decoration:none;">
-            🎛️ 主持人控制台
-          </a>
-          <!-- 解散会议（主持人） -->
-          <button id="menuDissolve" onclick="dissolveRoom()" class="menu-item danger" style="display:none;">
-            💥 解散会议
-          </button>
-          <!-- 清空消息（主持人） -->
-          <button id="menuClear" onclick="clearMessages()" class="menu-item danger" style="display:none;">
-            🗑️ 清空聊天记录
-          </button>
+          <a id="menuConsole" href="/host.html" class="menu-item" style="display:none;text-decoration:none;">🎛️ 主持人控制台</a>
+          <button id="menuDissolve" onclick="dissolveRoom()" class="menu-item danger" style="display:none;">💥 解散会议</button>
+          <button id="menuClear" onclick="clearMessages()" class="menu-item danger" style="display:none;">🗑️ 清空聊天记录</button>
           <div class="menu-divider"></div>
-          <!-- 关于页面 -->
-          <a href="/about.html" class="menu-item" style="text-decoration:none;">
-            ℹ️ 关于
-          </a>
-          <!-- 离开会议 -->
-          <button onclick="leaveRoom()" class="menu-item">
-            🚪 离开会议
-          </button>
+          <a href="/about.html" class="menu-item" style="text-decoration:none;">ℹ️ 关于</a>
+          <button onclick="leaveRoom()" class="menu-item">🚪 离开会议</button>
         </div>
       </div>
 
-      <!-- 右侧：昵称 + 主持人标识 + 在线人数 -->
       <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;justify-content:flex-end;">
+        <span id="encIndicator" style="display:none;font-size:0.8rem;" title="端对端加密已启用">🔒</span>
         <span id="hNickname" style="color:#c7d2fe;font-size:0.875rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-        <span id="hHostBadge"
-          style="display:none;background:#facc15;color:#78350f;font-size:0.7rem;
-                 padding:2px 8px;border-radius:999px;font-weight:700;white-space:nowrap;flex-shrink:0;">
-          主持人
-        </span>
+        <span id="hHostBadge" style="display:none;background:#facc15;color:#78350f;font-size:0.7rem;padding:2px 8px;border-radius:999px;font-weight:700;white-space:nowrap;flex-shrink:0;">主持人</span>
         <span id="hMemberCount" style="color:#c7d2fe;font-size:0.75rem;white-space:nowrap;flex-shrink:0;"></span>
       </div>
     </header>
@@ -210,36 +119,24 @@
     <!-- 文件展示区 -->
     <div id="fileSection">
       <div id="danmakuZone" style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:10;"></div>
-
       <div id="uploadBtn" style="display:none;position:absolute;top:8px;right:8px;z-index:20;">
-        <label style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;
-          background:#6366f1;color:#fff;font-size:0.75rem;font-weight:700;
-          padding:6px 12px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+        <label style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;background:#6366f1;color:#fff;font-size:0.75rem;font-weight:700;padding:6px 12px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
           📁 上传文件
-          <input type="file" accept=".txt,.md" style="display:none;" onchange="uploadFile(this)" />
+          <input type="file" accept=".txt,.md,.pdf" style="display:none;" onchange="uploadFile(this)" />
         </label>
       </div>
-
       <div id="fileDisplay">
-        <div id="filePlaceholder" style="display:flex;flex-direction:column;align-items:center;
-          justify-content:center;height:100%;color:#9ca3af;user-select:none;">
+        <div id="filePlaceholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#9ca3af;user-select:none;">
           <span style="font-size:2.5rem;margin-bottom:8px;">📄</span>
           <span>等待主持人上传文件</span>
         </div>
       </div>
-
-      <div id="fileNameBar" style="display:none;position:absolute;bottom:0;left:0;right:0;
-        background:rgba(249,250,251,0.95);border-top:1px solid #e5e7eb;
-        padding:3px 12px;font-size:0.7rem;color:#6b7280;font-family:monospace;
-        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-      </div>
+      <div id="fileNameBar" style="display:none;position:absolute;bottom:0;left:0;right:0;background:rgba(249,250,251,0.95);border-top:1px solid #e5e7eb;padding:3px 12px;font-size:0.7rem;color:#6b7280;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
     </div>
 
     <!-- 评论区 -->
     <div id="commentSection">
-
-      <div id="pinnedBar" style="display:none;flex-shrink:0;background:#fffbeb;
-        border-bottom:1px solid #fde68a;padding:8px 12px;">
+      <div id="pinnedBar" style="display:none;flex-shrink:0;background:#fffbeb;border-bottom:1px solid #fde68a;padding:8px 12px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
           <span style="color:#f59e0b;font-size:0.75rem;font-weight:700;flex-shrink:0;margin-top:2px;">📌 置顶</span>
           <div style="min-width:0;">
@@ -248,36 +145,88 @@
           </div>
         </div>
       </div>
-
       <div id="msgList"></div>
-
       <div id="inputArea">
         <div style="display:flex;gap:8px;align-items:center;">
           <input id="msgInput" type="text" maxlength="500" placeholder="在此输入评论..."
-            style="flex:1;border:1px solid #d1d5db;border-radius:999px;padding:8px 16px;
-                   font-size:0.875rem;outline:none;min-width:0;"
-            onfocus="this.style.borderColor='#6366f1'"
-            onblur="this.style.borderColor='#d1d5db'"
+            style="flex:1;border:1px solid #d1d5db;border-radius:999px;padding:8px 16px;font-size:0.875rem;outline:none;min-width:0;"
+            onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#d1d5db'"
             onkeydown="if(event.key==='Enter')sendMsg()" />
           <button onclick="sendMsg()"
-            style="flex-shrink:0;background:#6366f1;color:#fff;font-weight:700;font-size:0.875rem;
-                   padding:8px 18px;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;">
+            style="flex-shrink:0;background:#6366f1;color:#fff;font-weight:700;font-size:0.875rem;padding:8px 18px;border-radius:999px;border:none;cursor:pointer;white-space:nowrap;">
             发送
           </button>
         </div>
       </div>
-
     </div>
   </div>
 
   <script>
-    // ─── 会话加载 ──────────────────────────────────
+    // ════════════════════════════════════════════════════
+    // AES-GCM 加解密（Web Crypto API，无需任何库）
+    // ════════════════════════════════════════════════════
+    function bufferToBase64url(buf) {
+      return btoa(String.fromCharCode(...new Uint8Array(buf)))
+        .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+    }
+    function base64urlToBuffer(b64) {
+      const s = b64.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(b64.length/4)*4,'=');
+      return Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
+    }
+
+    let cryptoKey = null; // CryptoKey 对象，null = 未加密模式
+
+    async function loadCryptoKey(encKeyStr) {
+      if (!encKeyStr) return;
+      try {
+        const raw = base64urlToBuffer(encKeyStr);
+        cryptoKey = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt','decrypt']);
+      } catch(e) { console.warn('密钥加载失败', e); }
+    }
+
+    // 加密字符串 → "ENC:ivB64.ctB64"
+    async function encryptText(text) {
+      if (!cryptoKey || !text) return text;
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = await crypto.subtle.encrypt(
+        { name:'AES-GCM', iv },
+        cryptoKey,
+        new TextEncoder().encode(text)
+      );
+      return 'ENC:' + bufferToBase64url(iv.buffer) + '.' + bufferToBase64url(ct);
+    }
+
+    // 解密 "ENC:ivB64.ctB64" → 原文；普通文本原样返回（向后兼容）
+    async function decryptText(token) {
+      if (!token) return token;
+      if (!token.startsWith('ENC:')) return token; // 未加密内容，直接显示
+      if (!cryptoKey) return '🔒 [需要密钥才能查看]';
+      try {
+        const [ivB64, ctB64] = token.slice(4).split('.');
+        const plain = await crypto.subtle.decrypt(
+          { name:'AES-GCM', iv: new Uint8Array(base64urlToBuffer(ivB64)) },
+          cryptoKey,
+          base64urlToBuffer(ctB64)
+        );
+        return new TextDecoder().decode(plain);
+      } catch { return '🔒 [解密失败]'; }
+    }
+
+    // ════════════════════════════════════════════════════
+    // 会话加载
+    // ════════════════════════════════════════════════════
     let S;
-    try { S = JSON.parse(sessionStorage.getItem('meeting') || 'null'); } catch(e) { S = null; }
+    try { S = JSON.parse(sessionStorage.getItem('meeting') || 'null'); } catch { S = null; }
     if (!S || !S.roomId) { alert('会话已过期，请重新进入'); location.href = '/'; }
     const { roomId, nickname, isHost, token, hostToken } = S;
 
-    // ─── 初始化 UI ─────────────────────────────────
+    // 初始化加密
+    (async () => {
+      await loadCryptoKey(S.encKey);
+      if (cryptoKey) document.getElementById('encIndicator').style.display = 'inline';
+    })();
+
+    // ─── 初始化 UI ─────────────────────────────────────
     document.getElementById('hNickname').textContent = nickname;
     document.getElementById('menuRoomId').textContent = '🏠 ' + roomId;
     if (isHost) {
@@ -288,7 +237,7 @@
       document.getElementById('uploadBtn').style.display = 'block';
     }
 
-    // ─── 汉堡菜单 ──────────────────────────────────
+    // ─── 汉堡菜单 ──────────────────────────────────────
     let menuOpen = false;
     function toggleMenu() {
       menuOpen = !menuOpen;
@@ -302,41 +251,28 @@
       document.getElementById('menuDropdown').classList.remove('open');
       document.getElementById('menuOverlay').style.display = 'none';
     }
-
-    // ─── 离开会议 ──────────────────────────────────
     function leaveRoom() {
-      if (confirm('确定要离开会议吗？')) {
-        sessionStorage.clear();
-        location.href = '/';
-      }
+      if (confirm('确定要离开会议吗？')) { sessionStorage.clear(); location.href = '/'; }
     }
-
-    // ─── 解散会议（主持人）─────────────────────────
     async function dissolveRoom() {
-      if (!confirm('确定要解散会议吗？所有成员将被踢出，数据将被清除。')) return;
+      if (!confirm('确定要解散会议吗？所有数据将被清除。')) return;
       closeMenu();
       try {
         const res = await fetch('/api/dissolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ roomId, nickname, hostToken }),
         });
         const json = await res.json();
         if (json.error) { alert('操作失败：' + json.error); return; }
-        sessionStorage.clear();
-        alert('会议已解散');
-        location.href = '/';
+        sessionStorage.clear(); alert('会议已解散'); location.href = '/';
       } catch(e) { alert('网络错误：' + e.message); }
     }
-
-    // ─── 清空聊天记录（主持人）────────────────────
     async function clearMessages() {
       if (!confirm('确定要清空所有聊天记录吗？')) return;
       closeMenu();
       try {
         const res = await fetch('/api/clear-messages', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ roomId, nickname, hostToken }),
         });
         const json = await res.json();
@@ -345,7 +281,7 @@
       } catch(e) { alert('网络错误：' + e.message); }
     }
 
-    // ─── 状态变量 ──────────────────────────────────
+    // ─── 状态变量 ──────────────────────────────────────
     let lastFileContent = null;
     let lastMsgCount = -1;
     let lastPinnedId = null;
@@ -353,76 +289,93 @@
     let isDismissing = false;
     let seenAnnouncementTime = null;
 
-    // ─── 轮询 ──────────────────────────────────────
+    // ─── 轮询 ──────────────────────────────────────────
     async function poll() {
       try {
-        const res = await fetch(
-          '/api/state?roomId=' + roomId + '&nickname=' + encodeURIComponent(nickname) + '&token=' + token
-        );
+        const res = await fetch('/api/state?roomId=' + roomId + '&nickname=' + encodeURIComponent(nickname) + '&token=' + token);
         if (res.status === 401) { sessionStorage.clear(); location.href = '/'; return; }
-        // 房间已解散
-        if (res.status === 404) {
-          sessionStorage.clear();
-          alert('会议已被主持人解散');
-          location.href = '/';
-          return;
-        }
+        if (res.status === 404) { sessionStorage.clear(); alert('会议已被主持人解散'); location.href = '/'; return; }
         if (!res.ok) return;
         const s = await res.json();
-        // 房间解散标志
-        if (s.dissolved) {
-          sessionStorage.clear();
-          alert('会议已被主持人解散');
-          location.href = '/';
-          return;
-        }
-        applyState(s);
+        if (s.dissolved) { sessionStorage.clear(); alert('会议已被主持人解散'); location.href = '/'; return; }
+        await applyState(s);
       } catch {}
     }
 
-    function applyState(s) {
+    async function applyState(s) {
       document.getElementById('hMemberCount').textContent = s.members.length + ' 人在线';
 
+      // 文件内容
       if (s.fileContent && s.fileContent !== lastFileContent) {
         lastFileContent = s.fileContent;
         const fd = document.getElementById('fileDisplay');
-const placeholder = document.getElementById('filePlaceholder');
-if (placeholder) placeholder.remove();
-// 判断是否为 md 文件，是则渲染，否则纯文本
-if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
-  fd.innerHTML = marked.parse(s.fileContent);
-} else {
-  fd.textContent = s.fileContent;
-}
+        const placeholder = document.getElementById('filePlaceholder');
+        if (placeholder) placeholder.remove();
+
+        // 解密文件内容
+        const plainContent = await decryptText(s.fileContent);
+        const isPdf = s.fileName && s.fileName.toLowerCase().endsWith('.pdf');
+        const isMd  = s.fileName && s.fileName.toLowerCase().endsWith('.md');
+
+        if (isPdf) {
+          fd.innerHTML = '';
+          fd.style.padding = '0';
+          let iframe = document.getElementById('pdfViewer');
+          if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'pdfViewer';
+            iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+            fd.appendChild(iframe);
+          }
+          // PDF 是 base64 data URL，解密后仍为 data URL
+          iframe.src = plainContent;
+        } else if (isMd) {
+          fd.style.padding = '16px 16px 36px 16px';
+          fd.style.whiteSpace = 'normal';
+          fd.innerHTML = marked.parse(plainContent);
+        } else {
+          fd.style.padding = '16px 16px 36px 16px';
+          fd.style.whiteSpace = 'pre-wrap';
+          fd.textContent = plainContent;
+        }
+
         if (s.fileName) {
           const bar = document.getElementById('fileNameBar');
-          bar.textContent = '📄 ' + s.fileName;
+          bar.textContent = (cryptoKey ? '🔒 ' : '') + '📄 ' + s.fileName;
           bar.style.display = 'block';
         }
       }
 
+      // 消息（解密后渲染）
       if (s.messages.length !== lastMsgCount || s.pinnedMessageId !== lastPinnedId) {
         lastMsgCount = s.messages.length;
         lastPinnedId = s.pinnedMessageId;
-        renderMessages(s.messages, s.pinnedMessageId);
+        await renderMessages(s.messages, s.pinnedMessageId);
       }
 
-      // 弹幕：只发一条
+      // 弹幕（解密后显示）
       if (s.announcement && s.announcementTime !== seenAnnouncementTime) {
         seenAnnouncementTime = s.announcementTime;
-        fireDanmaku(s.announcement);
+        const plainAnn = await decryptText(s.announcement);
+        fireDanmaku(plainAnn);
       }
 
       if (!s.isRequired && !isDismissing) isRequiredActive = false;
       if (s.isRequired && !isRequiredActive && !isDismissing) showRequiredModal();
     }
 
-    // ─── 消息渲染 ───────────────────────────────────
-    function renderMessages(msgs, pinnedId) {
+    // ─── 消息渲染（含解密）──────────────────────────────
+    async function renderMessages(msgs, pinnedId) {
       const list = document.getElementById('msgList');
       const atBottom = list.scrollHeight - list.clientHeight <= list.scrollTop + 30;
 
-      const pinned = msgs.find(m => m.id === pinnedId);
+      // 解密所有消息
+      const decrypted = await Promise.all(msgs.map(async msg => ({
+        ...msg,
+        content: await decryptText(msg.content),
+      })));
+
+      const pinned = decrypted.find(m => m.id === pinnedId);
       const bar = document.getElementById('pinnedBar');
       if (pinned) {
         document.getElementById('pinnedNick').textContent = pinned.nickname;
@@ -433,7 +386,7 @@ if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
       }
 
       list.innerHTML = '';
-      msgs.forEach(msg => {
+      decrypted.forEach(msg => {
         const isHostMsg = msg.is_host === 1 || msg.is_host === true;
         const isPinned = msg.id === pinnedId;
         const row = document.createElement('div');
@@ -441,24 +394,23 @@ if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
         row.innerHTML =
           '<div style="flex:1;min-width:0;">' +
             '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px;flex-wrap:wrap;">' +
-              '<span style="font-size:0.75rem;font-weight:700;color:' + (isHostMsg ? '#4338ca' : '#6b7280') + ';">' +
-                esc(msg.nickname) + (isHostMsg ? ' 👑' : '') +
+              '<span style="font-size:0.75rem;font-weight:700;color:' + (isHostMsg?'#4338ca':'#6b7280') + ';">' +
+                esc(msg.nickname) + (isHostMsg?' 👑':'') +
               '</span>' +
-              (isPinned ? '<span style="color:#f59e0b;font-size:0.75rem;">📌</span>' : '') +
+              (isPinned?'<span style="color:#f59e0b;font-size:0.75rem;">📌</span>':'') +
               '<span style="font-size:0.7rem;color:#9ca3af;">' + fmtTime(msg.time) + '</span>' +
             '</div>' +
             '<span class="msg-bubble">' + esc(msg.content) + '</span>' +
           '</div>' +
           (isHost
-            ? '<button onclick="pinMsg(\'' + msg.id + '\')" ' +
-              'style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:1rem;color:#d1d5db;padding:2px;margin-top:2px;">📌</button>'
+            ? '<button onclick="pinMsg(\'' + msg.id + '\')" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:1rem;color:#d1d5db;padding:2px;margin-top:2px;">📌</button>'
             : '');
         list.appendChild(row);
       });
       if (atBottom) list.scrollTop = list.scrollHeight;
     }
 
-    // ─── 发送消息 ───────────────────────────────────
+    // ─── 发送消息（加密）───────────────────────────────
     async function sendMsg() {
       const input = document.getElementById('msgInput');
       const content = input.value.trim();
@@ -466,9 +418,10 @@ if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
       const btn = document.querySelector('#inputArea button');
       btn.textContent = '发送中...'; btn.disabled = true;
       try {
+        const encContent = await encryptText(content); // 加密
         const res = await fetch('/api/message', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomId, nickname, token, content }),
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ roomId, nickname, token, content: encContent }),
         });
         const json = await res.json();
         if (json.error) alert('发送失败：' + json.error);
@@ -477,44 +430,64 @@ if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
       finally { btn.textContent = '发送'; btn.disabled = false; }
     }
 
-    // ─── 置顶消息 ───────────────────────────────────
+    // ─── 置顶消息 ───────────────────────────────────────
     async function pinMsg(msgId) {
       await fetch('/api/pin', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ roomId, nickname, hostToken, messageId: msgId }),
       });
       poll();
     }
 
-    // ─── 上传文件 ───────────────────────────────────
-    async function uploadFile(input) {
-      const file = input.files[0];
+    // ─── 上传文件（加密）───────────────────────────────
+    async function uploadFile(inputEl) {
+      const file = inputEl.files[0];
       if (!file) return;
-      if (!/\.(txt|md)$/i.test(file.name)) { alert('仅支持 .txt 或 .md 格式文件'); input.value = ''; return; }
-      const content = await file.text();
+      if (!/\.(txt|md|pdf)$/i.test(file.name)) {
+        alert('仅支持 .txt、.md 或 .pdf 格式文件');
+        inputEl.value = ''; return;
+      }
+      const isPdf = file.name.toLowerCase().endsWith('.pdf');
+      if (isPdf && file.size > 750 * 1024) {
+        alert('PDF 文件不能超过 750KB');
+        inputEl.value = ''; return;
+      }
+
+      let content;
+      if (isPdf) {
+        content = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      } else {
+        content = await file.text();
+      }
+
+      const encContent = await encryptText(content); // 加密文件内容
       const res = await fetch('/api/upload-file', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, nickname, hostToken, content, fileName: file.name }),
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ roomId, nickname, hostToken, content: encContent, fileName: file.name }),
       });
       const json = await res.json();
       if (json.error) alert(json.error);
       else poll();
-      input.value = '';
+      inputEl.value = '';
     }
 
-    // ─── 弹幕：只显示一条 ──────────────────────────
+    // ─── 弹幕 ───────────────────────────────────────────
     function fireDanmaku(text) {
       const zone = document.getElementById('danmakuZone');
       const el = document.createElement('div');
       el.className = 'danmaku-item';
       el.textContent = '📢 ' + text;
-      // 随机在 20%~70% 高度出现
       el.style.top = (20 + Math.random() * 50) + '%';
       zone.appendChild(el);
       el.addEventListener('animationend', () => el.remove());
     }
 
-    // ─── 要求回答弹窗 ───────────────────────────────
+    // ─── 要求回答弹窗 ───────────────────────────────────
     function showRequiredModal() {
       isRequiredActive = true;
       document.getElementById('appHeader').classList.add('required-ring');
@@ -528,16 +501,10 @@ if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
       countdown.textContent = sec + ' 秒后可关闭...';
       const t = setInterval(() => {
         sec--;
-        if (sec <= 0) {
-          clearInterval(t);
-          countdown.style.display = 'none';
-          closeBtn.style.display = 'block';
-        } else {
-          countdown.textContent = sec + ' 秒后可关闭...';
-        }
+        if (sec <= 0) { clearInterval(t); countdown.style.display='none'; closeBtn.style.display='block'; }
+        else countdown.textContent = sec + ' 秒后可关闭...';
       }, 1000);
     }
-
     async function dismissRequiredModal() {
       isDismissing = true;
       document.getElementById('requiredModal').style.display = 'none';
@@ -545,7 +512,7 @@ if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
       document.getElementById('appHeader').classList.remove('required-ring');
       try {
         await fetch('/api/clear-required', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ roomId, nickname, token }),
         });
       } catch {}
@@ -553,7 +520,7 @@ if (s.fileName && s.fileName.toLowerCase().endsWith('.md')) {
       isDismissing = false;
     }
 
-    // ─── 工具 ───────────────────────────────────────
+    // ─── 工具 ───────────────────────────────────────────
     function esc(s) {
       return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
