@@ -11,92 +11,129 @@
     <div class="text-center mb-8">
       <div class="text-5xl mb-3">🗣️</div>
       <h1 class="text-3xl font-bold text-indigo-700">在线会议</h1>
-      <p class="text-gray-500 mt-2">支持展示.txt和.md格式文件</p>
+      <p class="text-gray-500 mt-2">无需账号，输入房间号即可开始</p>
     </div>
 
     <div class="bg-white rounded-2xl shadow-lg p-6 space-y-4">
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1">房间号</label>
-        <input
-          id="roomId"
-          type="text"
-          maxlength="8"
-          autocomplete="off"
-          class="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg font-mono tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
-          placeholder="输入8位房间号"
-        />
+        <input id="roomId" type="text" maxlength="8" autocomplete="off"
+          class="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg font-mono
+                 tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500 text-center"
+          placeholder="输入8位房间号" />
         <p class="text-xs text-gray-400 mt-1 text-center">由字母 A-Z 和数字 0-9 组成</p>
       </div>
 
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1">你的昵称</label>
-        <input
-          id="nickname"
-          type="text"
-          maxlength="20"
+        <input id="nickname" type="text" maxlength="20"
           class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="输入昵称（最多20字）"
-        />
+          placeholder="输入昵称（最多20字）" />
       </div>
 
       <div id="errorMsg" class="hidden bg-red-50 text-red-600 text-sm rounded-lg px-4 py-2 text-center"></div>
 
+      <!-- 加密状态提示 -->
+      <div id="encBadge" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-700
+        text-xs rounded-lg px-4 py-2 text-center flex items-center justify-center gap-2">
+        <span>🔒</span>
+        <span>已检测到加密密钥，本次会话将启用端对端加密</span>
+      </div>
+
       <div class="grid grid-cols-2 gap-3 pt-1">
-        <button
-          onclick="handleJoin()"
-          class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition active:scale-95"
-        >
+        <button onclick="handleJoin()"
+          class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition active:scale-95">
           加入房间
         </button>
-        <button
-          onclick="handleCreate()"
-          class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition active:scale-95"
-        >
+        <button onclick="handleCreate()"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition active:scale-95">
           创建房间
         </button>
       </div>
     </div>
 
+    <!-- 分享链接卡片（创建后显示） -->
+    <div id="shareCard" class="hidden bg-white rounded-2xl shadow-lg p-5 mt-4">
+      <p class="text-sm font-semibold text-gray-700 mb-2">🔗 分享以下链接给与会成员（含加密密钥）</p>
+      <div class="flex gap-2">
+        <input id="shareUrl" readonly
+          class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs font-mono bg-gray-50 min-w-0" />
+        <button onclick="copyShare()"
+          class="shrink-0 bg-indigo-500 text-white text-xs font-semibold px-3 py-2 rounded-xl">
+          复制
+        </button>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">⚠️ 链接中的 # 后面是密钥，请通过安全渠道发送</p>
+    </div>
+
     <p class="text-center text-xs text-gray-400 mt-4">
-      创建者自动成为主持人 · 房间24小时后自动删除
+      创建者自动成为主持人 · 端对端加密保护内容
     </p>
   </div>
 
   <script>
-    const roomIdInput = document.getElementById('roomId');
-    const nicknameInput = document.getElementById('nickname');
-    const errorMsg = document.getElementById('errorMsg');
+    // ─── 工具函数 ──────────────────────────────────────
+    function bufferToBase64url(buf) {
+      return btoa(String.fromCharCode(...new Uint8Array(buf)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+    function base64urlToBuffer(b64) {
+      const b64std = b64.replace(/-/g, '+').replace(/_/g, '/')
+        .padEnd(Math.ceil(b64.length / 4) * 4, '=');
+      return Uint8Array.from(atob(b64std), c => c.charCodeAt(0)).buffer;
+    }
 
-    roomIdInput.addEventListener('input', function () {
+    // ─── 页面加载：检测 URL fragment 中的密钥 ──────────
+    const fragment = location.hash.slice(1); // 去掉 #
+    let pendingEncKey = null;
+
+    // fragment 格式：room=ROOMID&key=BASE64URLKEY
+    if (fragment) {
+      try {
+        const params = new URLSearchParams(fragment);
+        const keyStr = params.get('key');
+        const roomFromUrl = params.get('room');
+        if (keyStr) {
+          pendingEncKey = keyStr;
+          document.getElementById('encBadge').classList.remove('hidden');
+        }
+        if (roomFromUrl) {
+          document.getElementById('roomId').value = roomFromUrl.toUpperCase();
+        }
+      } catch {}
+    }
+
+    // ─── 输入格式化 ────────────────────────────────────
+    document.getElementById('roomId').addEventListener('input', function () {
       this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     });
 
     function showError(msg) {
-      errorMsg.textContent = msg;
-      errorMsg.classList.remove('hidden');
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.classList.remove('hidden');
     }
     function hideError() {
-      errorMsg.classList.add('hidden');
+      document.getElementById('errorMsg').classList.add('hidden');
     }
-
     function getInputs() {
-      const roomId = roomIdInput.value.trim();
-      const nickname = nicknameInput.value.trim();
-      if (!/^[A-Z0-9]{8}$/.test(roomId)) {
-        showError('房间号必须是8位字母+数字');
-        return null;
-      }
-      if (!nickname) {
-        showError('请输入昵称');
-        return null;
-      }
+      const roomId = document.getElementById('roomId').value.trim();
+      const nickname = document.getElementById('nickname').value.trim();
+      if (!/^[A-Z0-9]{8}$/.test(roomId)) { showError('房间号必须是8位字母+数字'); return null; }
+      if (!nickname) { showError('请输入昵称'); return null; }
       hideError();
       return { roomId, nickname };
     }
 
+    // ─── 创建房间 ───────────────────────────────────────
     async function handleCreate() {
       const data = getInputs();
       if (!data) return;
+
+      // 生成随机 AES-256 密钥
+      const rawKey = crypto.getRandomValues(new Uint8Array(32));
+      const encKeyStr = bufferToBase64url(rawKey.buffer);
+
       try {
         const res = await fetch('/api/create', {
           method: 'POST',
@@ -105,12 +142,27 @@
         });
         const json = await res.json();
         if (json.error) { showError(json.error); return; }
-        saveAndGo(json);
-      } catch {
-        showError('网络错误，请重试');
-      }
+
+        // 保存密钥到 sessionStorage
+        sessionStorage.setItem('meeting', JSON.stringify({
+          roomId: json.roomId, nickname: json.nickname,
+          isHost: json.isHost, token: json.token,
+          hostToken: json.hostToken || null,
+          encKey: encKeyStr,
+        }));
+
+        // 显示分享链接
+        const shareUrl = `${location.origin}/?room=${json.roomId}#key=${encKeyStr}`;
+        document.getElementById('shareUrl').value = shareUrl;
+        document.getElementById('shareCard').classList.remove('hidden');
+
+        // 跳转
+        setTimeout(() => { location.href = '/room.html'; }, 1200);
+
+      } catch { showError('网络错误，请重试'); }
     }
 
+    // ─── 加入房间 ───────────────────────────────────────
     async function handleJoin() {
       const data = getInputs();
       if (!data) return;
@@ -122,24 +174,27 @@
         });
         const json = await res.json();
         if (json.error) { showError(json.error); return; }
-        saveAndGo(json);
-      } catch {
-        showError('网络错误，请重试');
-      }
+
+        sessionStorage.setItem('meeting', JSON.stringify({
+          roomId: json.roomId, nickname: json.nickname,
+          isHost: json.isHost, token: json.token,
+          hostToken: json.hostToken || null,
+          encKey: pendingEncKey || null, // 从 URL fragment 获取的密钥
+        }));
+
+        location.href = '/room.html';
+      } catch { showError('网络错误，请重试'); }
     }
 
-    function saveAndGo(json) {
-      sessionStorage.setItem(
-        'meeting',
-        JSON.stringify({
-          roomId: json.roomId,
-          nickname: json.nickname,
-          isHost: json.isHost,
-          token: json.token,
-          hostToken: json.hostToken || null,
-        })
-      );
-      window.location.href = '/room.html';
+    // ─── 复制分享链接 ───────────────────────────────────
+    function copyShare() {
+      const url = document.getElementById('shareUrl').value;
+      navigator.clipboard.writeText(url).then(() => alert('链接已复制！'))
+        .catch(() => {
+          document.getElementById('shareUrl').select();
+          document.execCommand('copy');
+          alert('链接已复制！');
+        });
     }
   </script>
 </body>
