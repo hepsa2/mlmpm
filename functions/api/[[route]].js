@@ -1,3 +1,4 @@
+
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -17,6 +18,9 @@ export async function onRequest(context) {
   const err = (msg, s=400)=> new Response(JSON.stringify({ error: msg }), { status: s, headers: HEADERS });
 
   try {
+    await env.DB.prepare(`
+  DELETE FROM rooms WHERE expires_at < ?
+`).bind(Date.now()).run();
     // ── 自动清理过期房间（24小时后） ─────────────────────────────
     // 在处理任何业务请求前先执行一次轻量清理（防止长时间无人使用导致数据堆积）
     if (path !== '/cleanup') {
