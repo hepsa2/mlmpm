@@ -27,3 +27,6 @@ CREATE TABLE IF NOT EXISTS messages (
   is_host INTEGER DEFAULT 0,
   time INTEGER NOT NULL
 );
+
+
+ALTER TABLE rooms ADD COLUMN expires_at INTEGER;
