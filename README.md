@@ -1,5 +1,17 @@
 # 在线会议室
-### 无语音
+### 文件结构
+```
+your-repo/
+├── schema.sql                    ← D1 数据库建表语句
+├── functions/
+│   └── api/
+│       └── [[route]].js          ← 后端 API（Workers）
+└── public/
+    ├── index.html                ← 创建/加入房间
+    ├── room.html                 ← 会议主界面
+    └── host.html                 ← 主持人控制台
+```
+### 加密原理
 ```
 创建房间
   └─ 浏览器生成随机 256 位密钥
