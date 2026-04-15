@@ -29,4 +29,4 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 
 
-ALTER TABLE rooms ADD COLUMN expires_at INTEGER;
+
