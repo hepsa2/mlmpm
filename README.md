@@ -41,7 +41,7 @@ your-repo/
 SELECT * FROM rooms ORDER BY created_at DESC;
 ```
 ### cloudflare端
-分三大段、一句话，把sql代码分四次上传cloudflareD1数据库,console页面
+分三大段把sql代码分三次上传cloudflareD1数据库,console页面
 ### cf的D1数据库
 - 名称meeting-db
 - 绑定时进入设置→functions,值写DB
