@@ -40,6 +40,21 @@ your-repo/
 ```
 SELECT * FROM rooms ORDER BY created_at DESC;
 ```
+### 检查其他数据
+- messages:
+```
+SELECT COUNT(*) FROM messages;
+```
+- members:
+```
+SELECT COUNT(*) FROM members;
+```
+### 清空所有数据
+```
+DELETE FROM messages;
+DELETE FROM members;
+DELETE FROM rooms;
+```
 ### cloudflare端
 分三大段把sql代码分三次上传cloudflareD1数据库,console页面
 ### cf的D1数据库
