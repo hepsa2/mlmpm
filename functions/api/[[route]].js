@@ -1,3 +1,18 @@
+export async function onScheduled(event, env) {
+  const expireThreshold = Date.now() - 24 * 60 * 60 * 1000;
+
+  await env.DB.prepare(
+    'DELETE FROM messages WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
+  ).bind(expireThreshold).run();
+
+  await env.DB.prepare(
+    'DELETE FROM members WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
+  ).bind(expireThreshold).run();
+
+  await env.DB.prepare(
+    'DELETE FROM rooms WHERE created_at < ?'
+  ).bind(expireThreshold).run();
+}
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -17,14 +32,7 @@ export async function onRequest(context) {
   const err = (msg, s=400) => new Response(JSON.stringify({ error: msg }), { status: s, headers: HEADERS });
 
   try {
-    // ── 自动清理过期房间（用 created_at 判断，无需额外字段）──────
-    // 仅在非 cleanup 路由时顺带执行，轻量不阻塞
-    if (path !== '/cleanup') {
-      const expireThreshold = Date.now() - 24 * 60 * 60 * 1000;
-      await env.DB.prepare('DELETE FROM messages WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)').bind(expireThreshold).run();
-      await env.DB.prepare('DELETE FROM members  WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)').bind(expireThreshold).run();
-      await env.DB.prepare('DELETE FROM rooms WHERE created_at < ?').bind(expireThreshold).run();
-    }
+    
 
     // ── POST /api/create ────────────────────────────────────────
     if (path === '/create' && request.method === 'POST') {
