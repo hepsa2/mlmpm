@@ -95,8 +95,8 @@ export async function onRequest(context) {
 
       const now = Date.now();
 
-      // 每次轮询都强制更新 last_seen（3秒一次轮询，节流改为30秒）
-      if (now - member.last_seen > 30000) {
+      // 每次轮询都强制更新 last_seen（10秒一次轮询）
+      if (now - member.last_seen > 100000) {
         await env.DB.prepare('UPDATE members SET last_seen = ? WHERE room_id = ? AND nickname = ?')
           .bind(now, roomId, nickname).run();
       }
@@ -105,10 +105,13 @@ export async function onRequest(context) {
       const activeMembersResult = await env.DB.prepare(
         'SELECT nickname FROM members WHERE room_id = ? AND last_seen > ?'
       ).bind(roomId, now - 60000).all();
+      const lastTime = Number(url.searchParams.get('lastTime') || 0);
 
-      const messagesResult = await env.DB.prepare(
-        'SELECT * FROM messages WHERE room_id = ? ORDER BY time ASC'
-      ).bind(roomId).all();
+const messagesResult = await env.DB.prepare(
+  'SELECT * FROM messages WHERE room_id = ? AND time > ? ORDER BY time ASC LIMIT 50'
+).bind(roomId, lastTime).all();
+
+      
 
       const requiredMembers = JSON.parse(room.required_members || '[]');
       const isRequired = requiredMembers.includes(nickname);
