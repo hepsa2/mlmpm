@@ -119,7 +119,7 @@ export async function onRequest(context) {
           .bind(now, roomId, nickname).run();
       }
 
-      const activeMembersResult = await env.DB.prepare('SELECT nickname FROM members WHERE room_id = ? AND last_seen > ?')
+      const activeMembersResult = await env.DB.prepare('SELECT nickname,last_seen FROM members WHERE room_id = ? AND last_seen > ?')
         .bind(roomId, now - 180000).all();
 
       const messagesResult = await env.DB.prepare('SELECT * FROM messages WHERE room_id = ? ORDER BY time ASC')
