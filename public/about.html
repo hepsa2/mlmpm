@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>关于本会议室</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .content p {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 pb-10">
+  <div class="max-w-lg mx-auto px-4 pt-5">
+
+    <!-- 返回按钮 + 标题 -->
+    <div class="flex items-center gap-3 mb-8">
+      <a href="/room.html" 
+         class="text-indigo-500 hover:text-indigo-700 font-semibold flex items-center gap-1">
+        ← 返回会议室
+      </a>
+      <h1 class="text-2xl font-bold text-gray-800">关于本项目</h1>
+    </div>
+
+    <!-- 用前需知 -->
+    <div class="bg-white rounded-3xl shadow-sm p-6 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-2xl">⚠️</span>
+        <h2 class="font-bold text-gray-800 text-xl">用前需知</h2>
+      </div>
+      <div class="space-y-4 text-gray-700">
+        <div class="flex gap-3">
+          <span class="text-red-500 font-bold mt-0.5">•</span>
+          <p>会议室创建 <span class="font-semibold text-gray-900">24小时后自动删除</span>，请提前保存重要内容。</p>
+        </div>
+        <div class="flex gap-3">
+          <span class="text-red-500 font-bold mt-0.5">•</span>
+          <p>这是轻量级会议室，<span class="font-semibold text-gray-900">不支持 10 个以上参会者</span>或<span class="font-semibold text-gray-900">持续 8 小时以上</span>的会议。</p>
+        </div>
+        <div class="flex gap-3">
+          <span class="text-red-500 font-bold mt-0.5">•</span>
+          <p>因采用浏览器端定期轮询结构设计，<span class="font-semibold text-gray-900">会议室延迟较高</span>，请勿用于对实时性要求极高的场景。</p>
+        </div>
+        <div class="flex gap-3">
+          <span class="text-red-500 font-bold mt-0.5">•</span>
+          <p>目前仅支持展示 <span class="font-semibold text-gray-900">.txt</span> 和 <span class="font-semibold text-gray-900">.md</span> 格式文件，不支持 PDF 等其他格式。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 项目特点 & 开源地址 -->
+    <div class="bg-white rounded-3xl shadow-sm p-6 mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-2xl">🚀</span>
+        <h2 class="font-bold text-gray-800 text-xl">项目特点</h2>
+      </div>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 mb-5">
+        <p class="text-emerald-800 leading-relaxed">
+          不依赖自己的 VPS，<span class="font-semibold">仅需一部手机 + Cloudflare 免费计划</span> 即可快速搭建一个支持端到端加密的在线会议室。
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 mb-3">
+        <span class="text-2xl">📦</span>
+        <h3 class="font-semibold text-gray-800">开源地址</h3>
+      </div>
+      <a href="https://github.com/hepsa2/mlmpm" 
+         target="_blank"
+         class="block bg-gray-900 hover:bg-black text-white font-medium px-5 py-4 rounded-2xl transition flex items-center gap-3 group">
+        <span class="text-xl">🐙</span>
+        <div>
+          <div class="font-mono text-sm break-all">https://github.com/hepsa2/mlmpm</div>
+          <div class="text-xs text-gray-400 group-hover:text-gray-300">点击前往 GitHub 查看完整源码</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- XMPP 联系方式 -->
+    <div class="bg-white rounded-3xl shadow-sm p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-2xl">💬</span>
+        <h2 class="font-bold text-gray-800 text-xl">联系我们</h2>
+      </div>
+      
+      <div class="mb-4">
+        <p class="text-gray-600 mb-2">欢迎通过 XMPP 联系开发者：</p>
+        <a href="xmpp:tech@conference.jabb3r.de?join" 
+           class="inline-flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium px-5 py-3 rounded-2xl transition">
+          <span class="text-xl">🟣</span>
+          <span class="font-mono">tech@conference.jabb3r.de</span>
+        </a>
+      </div>
+
+      <div class="text-sm text-gray-500 leading-relaxed">
+        <p class="mb-2">什么是 XMPP？</p>
+        <a href="https://shiyiyue.codeberg.page/rev1/html/xmpp%E6%95%99%E5%AD%A6.html" 
+           target="_blank"
+           class="text-indigo-600 hover:text-indigo-700 underline">
+          → 点击这里了解 XMPP（去中心化即时通讯协议）
+        </a>
+      </div>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="text-center text-xs text-gray-400 mt-12">
+      <p>基于 Cloudflare + 浏览器端加密的轻量会议室</p>
+      <p class="mt-1">项目开源 · 欢迎 Star ⭐</p>
+    </div>
+
+  </div>
+</body>
+  </html>
