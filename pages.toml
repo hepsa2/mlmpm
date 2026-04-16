@@ -1,3 +1,0 @@
-# wrangler.toml 或 pages.toml
-[triggers]
-crons = ["0 * * * *"]
