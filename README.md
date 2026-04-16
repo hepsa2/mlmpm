@@ -7,7 +7,7 @@
 - 支持.txt.md格式
 ### 文件结构
 ```
-your-repo/
+repo/
 ├── schema.sql                    ← D1 数据库建表语句
 ├── functions/
 │   └── api/
