@@ -1,18 +1,3 @@
-export async function onScheduled(event, env) {
-  const expireThreshold = Date.now() - 24 * 60 * 60 * 1000;
-
-  await env.DB.prepare(
-    'DELETE FROM messages WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
-  ).bind(expireThreshold).run();
-
-  await env.DB.prepare(
-    'DELETE FROM members WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
-  ).bind(expireThreshold).run();
-
-  await env.DB.prepare(
-    'DELETE FROM rooms WHERE created_at < ?'
-  ).bind(expireThreshold).run();
-}
 export async function onRequest(context) {
   const { request, env } = context;
 
@@ -25,14 +10,29 @@ export async function onRequest(context) {
 
   if (request.method === 'OPTIONS') return new Response(null, { headers: HEADERS });
 
-  const url = new URL(request.url);
+  const url  = new URL(request.url);
   const path = url.pathname.replace(/^\/api/, '');
 
   const ok  = (data)       => new Response(JSON.stringify(data), { headers: HEADERS });
   const err = (msg, s=400) => new Response(JSON.stringify({ error: msg }), { status: s, headers: HEADERS });
 
   try {
-    
+
+    // ── 顺带清理过期房间（每次请求执行，用 created_at 判断，无需额外字段）
+    // Pages Functions 不支持 Cron，所以用请求触发代替定时任务
+    // 三条语句都很轻量（索引扫描），对免费额度影响极小
+    if (path !== '/cleanup') {
+      const expireThreshold = Date.now() - 24 * 60 * 60 * 1000;
+      await env.DB.prepare(
+        'DELETE FROM messages WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
+      ).bind(expireThreshold).run();
+      await env.DB.prepare(
+        'DELETE FROM members WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
+      ).bind(expireThreshold).run();
+      await env.DB.prepare(
+        'DELETE FROM rooms WHERE created_at < ?'
+      ).bind(expireThreshold).run();
+    }
 
     // ── POST /api/create ────────────────────────────────────────
     if (path === '/create' && request.method === 'POST') {
@@ -72,7 +72,6 @@ export async function onRequest(context) {
       const memberToken = crypto.randomUUID();
       const now = Date.now();
 
-      // ON CONFLICT 确保重新加入时刷新 token 和 last_seen
       await env.DB.prepare(`
         INSERT INTO members (room_id, nickname, token, last_seen) VALUES (?, ?, ?, ?)
         ON CONFLICT(room_id, nickname) DO UPDATE SET token = excluded.token, last_seen = excluded.last_seen
@@ -95,7 +94,7 @@ export async function onRequest(context) {
       const room = await env.DB.prepare('SELECT * FROM rooms WHERE id = ?').bind(roomId).first();
       if (!room) return err('房间不存在', 404);
 
-      // ★ 修复：同时取 last_seen，否则心跳判断永远是 NaN
+      // 同时取 last_seen，心跳节流判断必须用到这个字段
       const member = await env.DB.prepare(
         'SELECT nickname, last_seen FROM members WHERE room_id = ? AND nickname = ? AND token = ?'
       ).bind(roomId, nickname, token).first();
@@ -103,23 +102,23 @@ export async function onRequest(context) {
 
       const now = Date.now();
 
-      // 每次轮询都强制更新 last_seen（10秒一次轮询）
-      if (now - member.last_seen > 100000) {
-        await env.DB.prepare('UPDATE members SET last_seen = ? WHERE room_id = ? AND nickname = ?')
-          .bind(now, roomId, nickname).run();
+      // 节流：30秒内不重复写入（必须 < 活跃窗口90秒，否则会误判离线）
+      if (now - member.last_seen > 30000) {
+        await env.DB.prepare(
+          'UPDATE members SET last_seen = ? WHERE room_id = ? AND nickname = ?'
+        ).bind(now, roomId, nickname).run();
       }
 
-      // 活跃成员：60秒内有心跳（原来是3分钟，改短让离线检测更灵敏）
+      // 活跃窗口：90秒内有心跳视为在线
+      // 3秒轮询 + 30秒节流 → 最坏情况30秒才更新一次，90秒窗口留有足够余量
       const activeMembersResult = await env.DB.prepare(
         'SELECT nickname FROM members WHERE room_id = ? AND last_seen > ?'
-      ).bind(roomId, now - 60000).all();
-      const lastTime = Number(url.searchParams.get('lastTime') || 0);
+      ).bind(roomId, now - 90000).all();
 
-const messagesResult = await env.DB.prepare(
-  'SELECT * FROM messages WHERE room_id = ? AND time > ? ORDER BY time ASC LIMIT 50'
-).bind(roomId, lastTime).all();
-
-      
+      // 全量消息（会议消息量有限，全量查询比增量更安全，避免置顶消息丢失）
+      const messagesResult = await env.DB.prepare(
+        'SELECT * FROM messages WHERE room_id = ? ORDER BY time ASC'
+      ).bind(roomId).all();
 
       const requiredMembers = JSON.parse(room.required_members || '[]');
       const isRequired = requiredMembers.includes(nickname);
@@ -254,13 +253,21 @@ const messagesResult = await env.DB.prepare(
       return ok({ success: true });
     }
 
-    // ── POST /api/cleanup （手动触发或 Cron 调用）───────────────
+    // ── POST /api/cleanup （手动触发，同时也被每次请求顺带执行）──
     if (path === '/cleanup' && request.method === 'POST') {
       const expireThreshold = Date.now() - 24 * 60 * 60 * 1000;
-      const expired = await env.DB.prepare('SELECT id FROM rooms WHERE created_at < ?').bind(expireThreshold).all();
-      await env.DB.prepare('DELETE FROM messages WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)').bind(expireThreshold).run();
-      await env.DB.prepare('DELETE FROM members  WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)').bind(expireThreshold).run();
-      await env.DB.prepare('DELETE FROM rooms WHERE created_at < ?').bind(expireThreshold).run();
+      const expired = await env.DB.prepare(
+        'SELECT id FROM rooms WHERE created_at < ?'
+      ).bind(expireThreshold).all();
+      await env.DB.prepare(
+        'DELETE FROM messages WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
+      ).bind(expireThreshold).run();
+      await env.DB.prepare(
+        'DELETE FROM members WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ?)'
+      ).bind(expireThreshold).run();
+      await env.DB.prepare(
+        'DELETE FROM rooms WHERE created_at < ?'
+      ).bind(expireThreshold).run();
       return ok({ success: true, message: '已清理过期会议室', cleanedCount: expired.results.length });
     }
 
