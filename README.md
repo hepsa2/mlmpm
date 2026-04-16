@@ -16,6 +16,7 @@ your-repo/
     ├── index.html                ← 创建/加入房间
     ├── room.html                 ← 会议主界面
     └── host.html                 ← 主持人控制台
+    └── about.html                ← 关于项目
 ```
 ### 加密原理
 ```
