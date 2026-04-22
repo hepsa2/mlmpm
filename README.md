@@ -62,6 +62,7 @@ DELETE FROM rooms;
 ### cf的D1数据库
 - 名称meeting-db
 - 绑定时进入设置→functions,值写DB
+- Build configuration栏目output directory输入public
 ### 注意
 cloudflare必须识别仓库代码成pages而不是workers
 
